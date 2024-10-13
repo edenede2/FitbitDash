@@ -338,6 +338,6 @@ def delete_settings(n_clicks, project_name):
     else:
         json.dump(Pconfigs, open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "w"), indent=4)
 
-    message = f'{project_name} deleted successfully'
+    message = f'{project_name} deleted successfully! Please close the app and open it again to see the changes.'
 
     return True, message
