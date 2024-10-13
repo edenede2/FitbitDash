@@ -54,8 +54,10 @@ now = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') # for the output fil
 dash.register_page(__name__, name='Time Series Visualization', order=7)
 
 pages = {}
-
-Pconfigs = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
+try:
+    Pconfigs = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
+except:
+    Pconfigs = json.load(open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "r"))
 
 for key in Pconfigs.keys():
     page_name = key
