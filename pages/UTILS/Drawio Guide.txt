@@ -1,0 +1,10 @@
+How to create new diagram or open existing diagram?
+1. write drawio on google on open the first link.
+2. create new diagram from templete
+3. click "file" and save in drive in the relevant folder.
+
+OR 
+1. write drawio on google on open the first link.
+2. select your google account 
+3. open with google drive
+4. find the diagram file in the relevant code folder.
