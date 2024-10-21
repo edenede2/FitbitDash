@@ -609,10 +609,18 @@ def main(project, username, now):
 
     try:
         print('Downloading data...')
-        exeHistory_path = Path(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\ExecutionHis\exeHistory.parquet')
+        try:
+            exeHistory_path = Path(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\ExecutionHis\exeHistory.parquet')
+        except Exception as e:
+            exeHistory_path = Path(r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\ExecutionHis\exeHistory.parquet')
         exeHistory = pl.read_parquet(exeHistory_path)
 
-        paths_json = json.load(open(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths data.json', 'r'))
+        try:
+            paths_json = json.load(open(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths data.json', 'r'))
+        except:
+            paths_json = json.load(open(r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths data.json', 'r'))
+
+    
         project_path = Path(paths_json[project])
 
 
@@ -627,7 +635,12 @@ def main(project, username, now):
         if not DATA_PATH.exists():
             DATA_PATH.mkdir()
 
-        api_data_path = Path(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_download_api.parquet')
+
+        try:
+            api_data_path = Path(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_download_api.parquet')
+        except:
+            api_data_path = Path(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_download_api.parquet')
+    
         data_df = pl.read_parquet(api_data_path)
 
         print('Folder created successfully')

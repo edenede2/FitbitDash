@@ -34,8 +34,11 @@ import os
 import re
 import tkinter as tk
 from tkinter import filedialog
-sys.path.append(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages')
 
+try:
+    sys.path.append(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages')
+except:
+    sys.path.append(r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages')
 import UTILS.utils as ut
 # from Test.Remove_sub.utils import get_latest_file_by_term as new_get_latest_file_by_term
 import warnings
@@ -51,11 +54,18 @@ def main(project, now, username):
         LAST = -1
 
         print('Starting script')
-        exeHistory_path = Path(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\ExecutionHis\exeHistory.parquet')
+        try:
+            exeHistory_path = Path(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\ExecutionHis\exeHistory.parquet')
+        except:
+            exeHistory_path = Path(r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\ExecutionHis\exeHistory.parquet')
 
         exeHistory = pl.read_parquet(exeHistory_path)
         print('Reading exeHistory')
-        paths_json = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
+        try:
+            paths_json = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
+        except:
+            paths_json = json.load(open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "r"))
+
         project_path = Path(paths_json[project])
 
 
@@ -66,9 +76,12 @@ def main(project, now, username):
 
         if not AGGREGATED_OUTPUT_PATH_HISTORY.exists():
             os.makedirs(AGGREGATED_OUTPUT_PATH_HISTORY)
-            
-        PROJECT_CONFIG = json.load(open(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths data.json', 'r'))
-            
+        
+        try:
+            PROJECT_CONFIG = json.load(open(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths data.json', 'r'))
+        except:
+            PROJECT_CONFIG = json.load(open(r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths data.json', 'r'))
+
         SUBJECTS_DATES = METADATA_PATH.joinpath('Subjects Dates.csv')
 
 
@@ -79,7 +92,11 @@ def main(project, now, username):
 
         subjects_dates_df = subjects_dates.sort(by='Id').unique('Id').drop_nulls('Id')
 
-        selected_subjects_path = Path(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_refresh_Combined.parquet')
+        try:
+            selected_subjects_path = Path(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_refresh_Combined.parquet')
+        except:
+            selected_subjects_path = Path(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_refresh_Combined.parquet')
+
 
         subjects_to_run_on = []
         refresh = False
@@ -427,8 +444,11 @@ def main(project, now, username):
 
         
         missing_values_df = missing_values_df.sort(['Subject', 'Last Updated']).unique('Subject', keep='last')
-
-        combined_subjects_path = rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_Combined.parquet'
+        try:
+            combined_subjects_path = rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_Combined.parquet'
+        except:
+            combined_subjects_path = rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_Combined.parquet'
+            
 
         if not os.path.exists(combined_subjects_path):
             missing_values_df.write_parquet(combined_subjects_path)

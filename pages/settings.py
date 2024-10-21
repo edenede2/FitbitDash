@@ -53,7 +53,10 @@ dash.register_page(__name__, name='Settings', order=0)
 
 pages = {}
 
-Pconfigs = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
+try:
+    Pconfigs = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
+except:
+    Pconfigs = json.load(open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "r"))
 
 for key in Pconfigs.keys():
     page_name = key
@@ -174,7 +177,11 @@ def update_paths(n_clicks, value, children):
         return children
     
     else:
-        raw_data_json_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths data.json'
+        if os.path.exists(rf'C:\Users\PsyLab-6028'):
+            raw_data_json_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths data.json'
+        else:
+            raw_data_json_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths data.json' 
+
         raw_data_path = json.load(open(raw_data_json_path, "r"))[value]
         new_children = [
             dbc.Row([
@@ -226,6 +233,17 @@ def update_paths(n_clicks, value, children):
                         n_clicks=0, 
                         color='primary')
                 ]),
+                dbc.Col([
+                    dbc.Button(
+                        'Delete', 
+                        id={
+                            'type': 'delete-settings-button',
+                            'index': 1
+                        },
+                        n_clicks=0, 
+                        color='danger')
+                ]),
+
             ]),
         ]
         children = new_children 
@@ -251,21 +269,75 @@ def save_settings(n_clicks, raw_data_path, processed_data_path,new_project_name,
         raise PreventUpdate
 
     if project_name == 'NEW':
-        raw_data_json_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths data.json'
+        if os.path.exists(rf'C:\Users\PsyLab-6028'):
+            raw_data_json_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths data.json'
+        else:
+            raw_data_json_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths data.json'
+
+
         raw_data = json.load(open(raw_data_json_path, "r"))
         raw_data[new_project_name[0]] = raw_data_path[0]
         json.dump(raw_data, open(raw_data_json_path, "w"), indent=4)
         
         Pconfigs[new_project_name[0]] = processed_data_path[0]
-        json.dump(Pconfigs, open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "w"), indent=4)
+        if os.path.exists(rf'C:\Users\PsyLab-6028'):
+            json.dump(Pconfigs, open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "w"), indent=4)
+        else:
+            json.dump(Pconfigs, open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "w"), indent=4) 
+
         return True
 
     else:
-        raw_data_json_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths data.json'
+        if os.path.exists(rf'C:\Users\PsyLab-6028'):
+            raw_data_json_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths data.json'
+        else:
+            raw_data_json_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths data.json'
+        
         raw_data = json.load(open(raw_data_json_path, "r"))
         raw_data[new_project_name[0]] = raw_data_path[0]
         json.dump(raw_data, open(raw_data_json_path, "w"), indent=4)
 
         Pconfigs[new_project_name[0]] = processed_data_path[0]
-        json.dump(Pconfigs, open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "w"), indent=4)
+        if os.path.exists(rf'C:\Users\PsyLab-6028'):
+            json.dump(Pconfigs, open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "w"), indent=4)
+        else:
+            json.dump(Pconfigs, open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "w"), indent=4)
+
         return True
+
+
+@callback(
+    Output('confirm-dialog-settings', 'displayed', allow_duplicate=True),
+    Output('confirm-dialog-settings', 'message'),
+    Input({'type': 'delete-settings-button', 'index': ALL}, 'n_clicks'),
+    State('project-selection-dropdown-FitBit-settings', 'value'),
+    prevent_initial_call=True
+)
+def delete_settings(n_clicks, project_name):
+    if not n_clicks:
+        raise PreventUpdate
+
+    if n_clicks == 0:
+        raise PreventUpdate
+
+    if n_clicks[0] == 0:
+        raise PreventUpdate
+
+    if os.path.exists(rf'C:\Users\PsyLab-6028'):
+        raw_data_json_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths data.json'
+    else:
+        raw_data_json_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths data.json'
+
+    raw_data = json.load(open(raw_data_json_path, "r"))
+    raw_data.pop(project_name)
+    json.dump(raw_data, open(raw_data_json_path, "w"), indent=4)
+
+    Pconfigs.pop(project_name)
+    if os.path.exists(rf'C:\Users\PsyLab-6028'):
+        json.dump(Pconfigs, open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "w"), indent=4)
+    else:
+        json.dump(Pconfigs, open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "w"), indent=4)
+
+    message = f'{project_name} deleted successfully! Please close the app and open it again to see the changes.'
+
+    return True, message

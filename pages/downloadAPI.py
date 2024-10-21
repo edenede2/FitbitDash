@@ -46,8 +46,10 @@ dash.register_page(__name__, name='download api', order=1)
 
 pages = {}
 
-Pconfigs = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
-
+try:
+    Pconfigs = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
+except:
+    Pconfigs = json.load(open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "r"))
 print(Pconfigs)
 
 
@@ -219,8 +221,11 @@ def generate_file(n_clicks, selected_rows, username, project):
         'token': [row['token'] for row in selected_rows[0]]
     })
     
+    if os.path.exists(rf'C:\Users\PsyLab-6028'):
+        selected_subjects.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_download_api.parquet')
+    else:
+        selected_subjects.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_download_api.parquet')
 
-    selected_subjects.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_download_api.parquet')
     print(selected_subjects)
 
     if username == '':
@@ -230,7 +235,11 @@ def generate_file(n_clicks, selected_rows, username, project):
 
         now = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         print(now)
-        script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\download_fitbit_data.py'
+        if os.path.exists(rf'C:\Users\PsyLab-6028'):
+            script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\download_fitbit_data.py'
+        else:
+            script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\download_fitbit_data.py'
+            
         print(script_path)
         if platform.system() == 'Windows':
             command = f'start cmd /c python "{script_path}" {project} {username} {now}'

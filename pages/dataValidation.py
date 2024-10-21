@@ -344,8 +344,10 @@ def initialize_folders(n_clicks, selected_rows, project, username):
         'Date': [datetime.datetime.now().strftime('%Y-%m-%d') for row in selected_rows[0]]
     })
     
-    selected_rows_df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_init.parquet')
-    
+    if os.path.exists(rf'C:\Users\PsyLab-6028'):
+        selected_rows_df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_init.parquet')
+    else:
+        selected_rows_df.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_init.parquet')
 
     if username == '':
         return False, True, 'Please enter your name'
@@ -360,8 +362,11 @@ def initialize_folders(n_clicks, selected_rows, project, username):
         param2 = now
         param3 = username
         # Define the command to run the script
-        script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\dataFoldersInit.py'
-    
+        if os.path.exists(rf'C:\Users\PsyLab-6028'):
+            script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\dataFoldersInit.py'
+        else:
+            script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\dataFoldersInit.py'  
+
         if platform.system() == "Windows":
             command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'  # Adjust this for non-Windows systems if needed
         else:
@@ -416,8 +421,10 @@ def initialize_folders(n_clicks, rows, project, username):
         'Date': [datetime.datetime.now().strftime('%Y-%m-%d') for row in rows[0]]
     })
     
-    selected_rows_df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_init.parquet')
-    
+    if os.path.exists(rf'C:\Users\PsyLab-6028'):
+        selected_rows_df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_init.parquet')
+    else:
+        selected_rows_df.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_init.parquet')
 
     if username == '':
         return False, True, 'Please enter your name'
@@ -432,8 +439,11 @@ def initialize_folders(n_clicks, rows, project, username):
         param2 = now
         param3 = username
         # Define the command to run the script
-        script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\dataFoldersInit.py'
-    
+        if os.path.exists(rf'C:\Users\PsyLab-6028'):
+            script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\dataFoldersInit.py'
+        else:
+            script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\dataFoldersInit.py'
+            
         if platform.system() == "Windows":
             command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'  # Adjust this for non-Windows systems if needed
         else:

@@ -34,7 +34,10 @@ import os
 import re
 import tkinter as tk
 from tkinter import filedialog
-sys.path.append(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages')
+if os.path.exists(rf'C:\Users\PsyLab-6028'):
+    sys.path.append(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages')
+else:
+    sys.path.append(r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages')
 
 import UTILS.utils as ut
 # from Test.Remove_sub.utils import get_latest_file_by_term as new_get_latest_file_by_term
@@ -48,12 +51,18 @@ warnings.filterwarnings('ignore')
 def main(project, now, username):
     FIRST = 0
     LAST = -1
-
-    exeHistory_path = Path(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\ExecutionHis\exeHistory.parquet')
+    if os.path.exists(rf'C:\Users\PsyLab-6028'):
+        exeHistory_path = Path(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\ExecutionHis\exeHistory.parquet')
+    else:
+        exeHistory_path = Path(r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\ExecutionHis\exeHistory.parquet')
 
     exeHistory = pl.read_parquet(exeHistory_path)
+    if os.path.exists(rf'C:\Users\PsyLab-6028'):
+        paths_json = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
+    else:
+        paths_json = json.load(open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "r"))    
 
-    paths_json = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
+    
     project_path = Path(paths_json[project])
 
 
@@ -64,9 +73,11 @@ def main(project, now, username):
 
     if not AGGREGATED_OUTPUT_PATH_HISTORY.exists():
         os.makedirs(AGGREGATED_OUTPUT_PATH_HISTORY)
-        
-    PROJECT_CONFIG = json.load(open(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths data.json', 'r'))
-        
+    if os.path.exists(rf'C:\Users\PsyLab-6028'):
+        PROJECT_CONFIG = json.load(open(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths data.json', 'r'))
+    else:
+        PROJECT_CONFIG = json.load(open(r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths data.json', 'r'))   
+
     SUBJECTS_DATES = METADATA_PATH.joinpath('Subjects Dates.csv')
 
 
@@ -76,9 +87,11 @@ def main(project, now, username):
 
 
     subjects_dates_df = subjects_dates.sort(by='Id').unique('Id').drop_nulls('Id')
-
-    selected_subjects_path = Path(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_EDA.parquet')
-
+    if os.path.exists(rf'C:\Users\PsyLab-6028'):
+        selected_subjects_path = Path(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_EDA.parquet')
+    else:
+        selected_subjects_path = Path(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_EDA.parquet') 
+        
     subjects_to_run_on = []
 
     if not selected_subjects_path.exists():
