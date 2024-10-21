@@ -124,6 +124,11 @@ layout = html.Div([
                         message='Error generating file'
                     )
                 ]),
+                dbc.Row([
+                    dbc.Col([
+                        html.Div(id='outputs-Sleep-All-Subjects')
+                    ])
+                ])
             ])
 ])
 
