@@ -424,6 +424,8 @@ def load_output(n_clicks, selected_folders, project):
 
     files = list(files_dates.keys())
 
+    files = [file for file in files if file.endswith('.csv') or file.endswith('.parquet')]
+
     files.sort()
 
     files_df = pd.DataFrame({

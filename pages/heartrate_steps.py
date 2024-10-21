@@ -129,7 +129,12 @@ layout = html.Div([
                 ]),
                 dbc.Row([
                     dbc.Col([
-                        html.Div(id='outputs-Sleep-All-Subjects')
+                        dbc.Button('Load outputs', id='load-outputs-button-Preprocessing', n_clicks=0, color='primary')
+                    ])
+                ]),
+                dbc.Row([
+                    dbc.Col([
+                        html.Div(id='outputs-Preprocessing')
                     ])
                 ])
             ])
@@ -520,3 +525,250 @@ def run_preprocessing(n_clicks, selected_rows, username, project):
         return False, True, str(e)
 
 
+                
+
+@callback(
+    Output('outputs-Preprocessing', 'children'),
+    Input('load-outputs-button-Preprocessing', 'n_clicks'),
+    State('project-selection-dropdown-FitBit-Preprocessing', 'value')
+)
+def load_outputs(n_clicks, project):
+    if n_clicks == 0:
+        raise PreventUpdate
+
+    project_path = Path(Pconfigs[project])
+
+    outputs_path = project_path.joinpath('Outputs')
+
+    if not os.path.exists(outputs_path):
+        return html.Div('No outputs yet, please generate at least one file')
+    
+    outputs_folders = [folder for folder in os.listdir(outputs_path) if os.path.isdir(outputs_path.joinpath(folder))]
+
+    outputs_folders.sort()
+
+    
+    dropdown_options = [{'label': folder, 'value': folder} for folder in outputs_folders]
+
+    
+
+    return html.Div([
+        dcc.Dropdown(
+            id={
+                'type': 'Preprocessing-outputs-dropdown',
+                'index': 1
+            },
+            options=dropdown_options,
+            value=outputs_folders[0]
+        ),
+        dbc.Button('Load', id={
+            'type': 'load-Preprocessing-outputs-button',
+            'index': 1
+        }, n_clicks=0, color='primary'),
+
+        html.Div(id={
+            'type': 'Preprocessing-outputs-container',
+            'index': 1
+        })
+    ])
+
+@callback(
+    Output({'type': 'Preprocessing-outputs-container', 'index': ALL}, 'children'),
+    Input({'type': 'load-Preprocessing-outputs-button', 'index': ALL}, 'n_clicks'),
+    State({'type': 'Preprocessing-outputs-dropdown', 'index': ALL}, 'value'),
+    State('project-selection-dropdown-FitBit-Preprocessing', 'value')
+)
+def load_output(n_clicks, selected_folders, project):
+    print(f'load_output: {n_clicks}')
+    if n_clicks[0] == 0:
+        raise PreventUpdate
+    
+    project_path = Path(Pconfigs[project])
+
+    outputs_path = project_path.joinpath('Outputs')
+
+    if not os.path.exists(outputs_path):
+        return html.Div('No outputs yet, please generate at least one file')
+    
+    outputs_folders = [folder for folder in os.listdir(outputs_path) if os.path.isdir(outputs_path.joinpath(folder))]
+
+    outputs_folders.sort()
+
+    if not selected_folders:
+        raise PreventUpdate
+    
+    selected_folder = selected_folders[0]
+
+    selected_folder_path = outputs_path.joinpath(selected_folder)
+
+    folder_name = selected_folder
+
+    files_dates = {}
+
+    for file in os.listdir(selected_folder_path):
+        files_dates[file] = os.path.getmtime(selected_folder_path.joinpath(file))
+
+    files_dates = {k: v for k, v in sorted(files_dates.items(), key=lambda item: item[1], reverse=True)}
+
+    files = list(files_dates.keys())
+    files = [file for file in files if file.endswith('.csv') or file.endswith('.parquet')]
+
+    files.sort()
+
+    files_df = pd.DataFrame({
+        'File': files,
+        'Creation Date': [datetime.datetime.fromtimestamp(files_dates[file]).strftime('%Y-%m-%d %H:%M:%S') for file in files]
+    })
+
+    rows = files_df.to_dict('records')
+
+    columns_def = [
+        {'headerName': 'File', 'field': 'File', 'sortable': True, 'filter': True, 'checkboxSelection': True},
+        {'headerName': 'Creation Date', 'field': 'Creation Date', 'sortable': True, 'filter': True}
+    ]
+
+    files_table = dag.AgGrid(
+        id={
+            'type': 'Preprocessing-files-table',
+            'index': 1
+        },
+        columnDefs=columns_def,
+        rowData=rows,
+        defaultColDef={
+            'resizable': True,
+            'sortable': True,
+            'filter': True
+        },
+        columnSize = 'autoSize',
+        dashGridOptions={'pagination': True, 'paginationPageSize': 10, 'rowSelection': 'multiple'}
+    )
+
+    show_button = dbc.Button('Preview selected file', id={
+        'type': 'show-preview-button-Preprocessing',
+        'index': 1
+    }, n_clicks=0, color='primary')
+
+    file_cotent = html.Div(id={
+        'type': 'file-content-Preprocessing',
+        'index': 1
+    })
+
+    return [html.Div([
+        files_table,
+        show_button,
+        file_cotent
+    ])]
+
+
+@callback(
+    Output({'type': 'file-content-Preprocessing', 'index': ALL}, 'children'),
+    Input({'type': 'show-preview-button-Preprocessing', 'index': ALL}, 'n_clicks'),
+    State({'type': 'Preprocessing-files-table', 'index': ALL}, 'selectedRows'),
+    State({'type': 'Preprocessing-outputs-dropdown', 'index': ALL}, 'value'),
+    State('project-selection-dropdown-FitBit-Preprocessing', 'value')
+)
+def show_file(n_clicks, selected_rows, selected_folder, project):
+    print(f'preview_output: {n_clicks}')
+    if n_clicks[0] == 0:
+        raise PreventUpdate
+
+    print(selected_rows)
+
+    project_path = Path(Pconfigs[project])
+
+    outputs_path = project_path.joinpath('Outputs')
+
+    if not os.path.exists(outputs_path):
+        return html.Div('No outputs yet, please generate at least one file')
+    
+    outputs_folders = [folder for folder in os.listdir(outputs_path) if os.path.isdir(outputs_path.joinpath(folder))]
+
+    outputs_folders.sort()
+
+    if not selected_folder:
+        raise PreventUpdate
+    
+    selected_folder = selected_folder[0]
+
+    selected_folder_path = outputs_path.joinpath(selected_folder)
+
+    folder_name = selected_folder
+
+    if not selected_rows:
+        raise PreventUpdate
+    
+    selected_file = selected_rows[0][0]['File']
+
+    selected_file_path = selected_folder_path.joinpath(selected_file)
+
+    if selected_file_path.suffix == '.csv':
+        df = pd.read_csv(selected_file_path)
+
+        note = ''
+        if len(df) > 2000:
+            df = df.head(2000)
+            note = 'Note: Only first 2000 rows are shown'
+
+        rows = df.to_dict('records')
+
+        columns_def = [{'headerName': col, 'field': col, 'sortable': True, 'filter': True} for col in df.columns]
+
+        table = dag.AgGrid(
+            id={
+                'type': 'Preprocessing-file-table',
+                'index': 1
+            },
+            columnDefs=columns_def,
+            rowData=rows,
+            defaultColDef={
+                'resizable': True,
+                'sortable': True,
+                'filter': True
+            },
+            columnSize = 'autoSize',
+            dashGridOptions={'pagination': True, 'paginationPageSize': 10}
+        )
+
+        return [html.Div(
+            [note,
+            table]
+        )]
+    
+    elif selected_file_path.suffix == '.parquet':
+
+        df = pd.read_parquet(selected_file_path)
+
+        note = ''
+
+        if len(df) > 2000:
+            df = df.head(2000)
+            note = 'Note: Only first 2000 rows are shown'
+
+        rows = df.to_dict('records')
+
+        columns_def = [{'headerName': col, 'field': col, 'sortable': True, 'filter': True} for col in df.columns]
+
+        table = dag.AgGrid(
+            id={
+                'type': 'Preprocessing-file-table',
+                'index': 1
+            },
+            columnDefs=columns_def,
+            rowData=rows,
+            defaultColDef={
+                'resizable': True,
+                'sortable': True,
+                'filter': True
+            },
+            columnSize = 'autoSize',
+            dashGridOptions={'pagination': True, 'paginationPageSize': 10}
+        )
+
+        return html.Div([
+            note,
+            table
+        ])
+    
+    else:
+        return html.Div('File type not supported')
+    
