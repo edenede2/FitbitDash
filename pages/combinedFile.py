@@ -116,21 +116,21 @@ layout = html.Div([
                         color='success'
                     )
                 ]),
-                dbc.Col([
-                    dbc.Accordion([
-                        dbc.AccordionItem([
-                            html.P('Include weekends in the aggregated file?'),
-                            dcc.Checklist(
-                                id='weekends-radio-Combined',
-                                options=[
-                                    {'label': 'With Weekends', 'value': 'with'},
-                                    {'label': 'Without Weekends', 'value': 'without'}
-                                ],
-                                value=[]
-                            )
-                            ], title='By Activity Aggregation File'),
-                    ]),
-                ]),
+                # dbc.Col([
+                #     dbc.Accordion([
+                #         dbc.AccordionItem([
+                #             html.P('Include weekends in the aggregated file?'),
+                #             dcc.Checklist(
+                #                 id='weekends-radio-Combined',
+                #                 options=[
+                #                     {'label': 'With Weekends', 'value': 'with'},
+                #                     {'label': 'Without Weekends', 'value': 'without'}
+                #                 ],
+                #                 value=[]
+                #             )
+                #             ], title='By Activity Aggregation File'),
+                #     ]),
+                # ]),
             ])
         ]),
         dbc.Row([
@@ -300,10 +300,9 @@ def load_raw_data_subjects(n_clicks, project):
     Input({'type': 'Initiate-Basic-Table','index': ALL}, 'n_clicks'),
     State('project-selection-dropdown-FitBit-Combined', 'value'),
     State('usenname-Combined', 'value'),
-    State('weekends-radio-Combined', 'value'),
     prevent_initial_call=True
 )
-def initiate_basic_table(n_clicks, project, weekends, user_name):
+def initiate_basic_table(n_clicks, project, user_name):
     if not n_clicks:
         raise PreventUpdate
     if n_clicks[0] == 0:
@@ -319,10 +318,8 @@ def initiate_basic_table(n_clicks, project, weekends, user_name):
     if user_name == '':
         return False, '', True, 'Please enter your name before generating the file'
 
-    include_weekends = True if 'with' in weekends else False
-    exclude_weekends = True if 'without' in weekends else False
-
-    print(f'include_weekends: {include_weekends}')
+    include_weekends = True
+    exclude_weekends = False
 
     try:
         param = project
@@ -362,10 +359,9 @@ def initiate_basic_table(n_clicks, project, weekends, user_name):
     State({'type': 'basic-table', 'index': ALL}, 'rowData'),
     State('project-selection-dropdown-FitBit-Combined', 'value'),
     State('usenname-Combined', 'value'),
-    State('weekends-radio-Combined', 'value'),
     prevent_initial_call=True
 )
-def refresh_selected(n_clicks, rows, project, user_name, weekends):
+def refresh_selected(n_clicks, rows, project, user_name):
     if n_clicks == 0:
         raise PreventUpdate
     
@@ -394,11 +390,13 @@ def refresh_selected(n_clicks, rows, project, user_name, weekends):
     else:
         selected_rows.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_refresh_Combined.parquet')
 
-    include_weekends = True if 'with' in weekends else False
-    exclude_weekends = True if 'without' in weekends else False
 
     if user_name == '':
         return False, '', True, 'Please enter your name before generating the file'
+
+    include_weekends = True
+    exclude_weekends = False
+
 
     try:
         param = project
@@ -436,10 +434,9 @@ def refresh_selected(n_clicks, rows, project, user_name, weekends):
     State({'type': 'basic-table', 'index': ALL}, 'rowData'),
     State('project-selection-dropdown-FitBit-Combined', 'value'),
     State('usenname-Combined', 'value'),
-    State('weekends-radio-Combined', 'value'),
     prevent_initial_call=True
 )
-def generate_file(n_clicks, rows, project, user_name, weekends):
+def generate_file(n_clicks, rows, project, user_name):
     if n_clicks == 0:
         raise PreventUpdate
     print(f'n_clicks generate: {n_clicks}')
@@ -463,8 +460,10 @@ def generate_file(n_clicks, rows, project, user_name, weekends):
         .drop('Last Updated')
     )
 
-    include_weekends = True if 'with' in weekends else False
-    exclude_weekends = True if 'without' in weekends else False
+    include_weekends = True
+    exclude_weekends = False
+
+
     if os.path.exists(r'C:\Users\PsyLab-6028'):
         updated_basic_df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_gen_Combined.parquet')
     else:
