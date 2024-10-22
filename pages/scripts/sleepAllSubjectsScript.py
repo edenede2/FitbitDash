@@ -218,10 +218,10 @@ def main(project, now, username, exclude_thursday, exclude_friday):
             subject_sleep_df = subject_sleep_df.drop_duplicates(subset=['BedStartTime', 'BedEndTime']).reset_index(drop=True)
             # Calculate the number of minutes it took to fall asleep and add it as a new column 'MinutesToFallAsleep'.
             # The *zero* element of levels.data column has 'seconds' field, which indicate the duration the subject was in bed awake (before fall asleep).
-            subject_sleep_df['MinutesToFallAsleep'] = subject_sleep_df['levels.data'].apply(lambda row: row[FIRST]['seconds'] / 60)
+            subject_sleep_df['MinutesToFallAsleep'] = subject_sleep_df['levels.data'].apply(lambda row: row[FIRST]['seconds'] / 60 if row[FIRST]['level'] in ['wake','awake'] else 0)
             # Calculate the number of minutes spent in bed after waking up and add it as a new column 'MinutesInBedAfterWakeup'.
             # The *last* element of levels.data column has 'seconds' field, which indicate the duration the subject was in bed after wakeup.
-            subject_sleep_df['MinutesInBedAfterWakeup'] = subject_sleep_df['levels.data'].apply(lambda row: row[LAST]['seconds'] / 60)
+            subject_sleep_df['MinutesInBedAfterWakeup'] = subject_sleep_df['levels.data'].apply(lambda row: row[LAST]['seconds'] / 60 if row[LAST]['level'] in ['wake','awake'] else 0)
             # Drop the 'levels.data' column. Not needed any more.
             subject_sleep_df = subject_sleep_df.drop(columns=['levels.data'])
             # Calculate the sleep start time by adding the 'MinutesToFallAsleep' to 'BedStartTime' and add the result as a new column 'SleepStartTime'.
