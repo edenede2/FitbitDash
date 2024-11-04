@@ -853,6 +853,8 @@ def main(project, now, username, include_weekends, exclude_weekends):
 
         ######################## generating the by activity aggregated file ########################
         def by_activity(exclude_weekends):
+            print(f'\n Aggregate Heart Rate Means By Activity, exclude_weekends={exclude_weekends}')
+            
             # Create an empty list to hold any subjects that are missing HRV or respiratory files
             subjects_with_missing_raw_sleep_data, subjects_with_missing_aggregated_sleep_files, subjects_with_missing_aggregated_files = [], [], []
 
@@ -1253,10 +1255,8 @@ def main(project, now, username, include_weekends, exclude_weekends):
 
             ut.check_for_duplications(AGGREGATED_OUTPUT_PATH, AGGREGATED_OUTPUT_PATH_HISTORY)
 
-        if include_weekend:
-            by_activity(exclude_weekends=False)
-        if exclude_weekend:
-            by_activity(exclude_weekends=True)
+        by_activity(exclude_weekends=False)
+        by_activity(exclude_weekends=True)
 
 
 
