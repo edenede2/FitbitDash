@@ -367,77 +367,77 @@ def show_available_data(n_clicks, selected_rows, project):
     State('project-selection-dropdown-FitBit-rhythmic', 'value')
 )
 def run_preprocessing(n_clicks, raw_data, username, project):
-    if n_clicks == 0:
-        raise PreventUpdate
+    # if n_clicks == 0:
+    #     raise PreventUpdate
     
-    if n_clicks == []:
-        return False, False, ''
+    # if n_clicks == []:
+    #     return False, False, ''
     
-    if n_clicks[0] == 0:
-        return False, False, ''
+    # if n_clicks[0] == 0:
+    #     return False, False, ''
     
-    print(f'n_clicks: {n_clicks}')
+    # print(f'n_clicks: {n_clicks}')
 
-    df = pl.DataFrame(raw_data[0])
-    print(f'Raw data: {df}')
+    # df = pl.DataFrame(raw_data[0])
+    # print(f'Raw data: {df}')
 
-    if not df['run'].any():
-        return False, True, 'No subjects selected to run Rhythmic'
+    # if not df['run'].any():
+    #     return False, True, 'No subjects selected to run Rhythmic'
     
-    df = (
-        df
-        .filter(
-            pl.col('n_files') > 0
-        )
-    )
+    # df = (
+    #     df
+    #     .filter(
+    #         pl.col('n_files') > 0
+    #     )
+    # )
 
-    if os.path.exists(rf'C:\Users\PsyLab-6028'):
-        df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_rhythmic.parquet')
-    else:
-        df.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_rhythmic.parquet')
+    # if os.path.exists(rf'C:\Users\PsyLab-6028'):
+    #     df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_rhythmic.parquet')
+    # else:
+    #     df.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_rhythmic.parquet')
 
-    if username == '':
-        return False, True, 'Please enter your name before running the rhythmic analysis'
-    # ls 
+    # if username == '':
+    #     return False, True, 'Please enter your name before running the rhythmic analysis'
+    # # ls 
         
 
-    try:
+    # try:
 
-        param = project
-        param2 = now
-        param3 = username
+    #     param = project
+    #     param2 = now
+    #     param3 = username
         
-        if os.path.exists(rf'C:\Users\PsyLab-6028'):
-            script_pxath = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\getEDA.py'
-        else:
-            script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\getEDA.py'
+    #     if os.path.exists(rf'C:\Users\PsyLab-6028'):
+    #         script_pxath = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\getEDA.py'
+    #     else:
+    #         script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\getEDA.py'
 
-        if platform.system() == 'Windows':
-            command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'
-            print(command)
-        else:
-            command = f'python3 "{script_path}" {param} {param2} {param3}'
-            print(command)
+    #     if platform.system() == 'Windows':
+    #         command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'
+    #         print(command)
+    #     else:
+    #         command = f'python3 "{script_path}" {param} {param2} {param3}'
+    #         print(command)
 
-        process = subprocess.Popen(command, 
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   shell=True)
+    #     process = subprocess.Popen(command, 
+    #                                stdout=subprocess.PIPE,
+    #                                stderr=subprocess.PIPE,
+    #                                shell=True)
         
-        return True, False, ''
-    except Exception as e:
-        print(e)
-        return False, True, str(e)
-
+    #     return True, False, ''
+    # except Exception as e:
+    #     print(e)
+    #     return False, True, str(e)
+    pass
 
     
 
                 
 
 @callback(
-    Output('outputs-EDA', 'children'),
-    Input('load-outputs-button-EDA', 'n_clicks'),
-    State('project-selection-dropdown-FitBit-EDA', 'value')
+    Output('outputs-rhythmic', 'children'),
+    Input('load-outputs-button-rhythmic', 'n_clicks'),
+    State('project-selection-dropdown-FitBit-rhythmic', 'value')
 )
 def load_outputs(n_clicks, project):
     if n_clicks == 0:
@@ -480,10 +480,10 @@ def load_outputs(n_clicks, project):
     ])
 
 @callback(
-    Output({'type': 'EDA-outputs-container', 'index': ALL}, 'children'),
-    Input({'type': 'load-EDA-outputs-button', 'index': ALL}, 'n_clicks'),
-    State({'type': 'EDA-outputs-dropdown', 'index': ALL}, 'value'),
-    State('project-selection-dropdown-FitBit-EDA', 'value')
+    Output({'type': 'rhythmic-outputs-container', 'index': ALL}, 'children'),
+    Input({'type': 'load-rhythmic-outputs-button', 'index': ALL}, 'n_clicks'),
+    State({'type': 'rhythmic-outputs-dropdown', 'index': ALL}, 'value'),
+    State('project-selection-dropdown-FitBit-rhythmic', 'value')
 )
 def load_output(n_clicks, selected_folders, project):
     print(f'load_output: {n_clicks}')
@@ -568,11 +568,11 @@ def load_output(n_clicks, selected_folders, project):
 
 
 @callback(
-    Output({'type': 'file-content-EDA', 'index': ALL}, 'children'),
-    Input({'type': 'show-preview-button-EDA', 'index': ALL}, 'n_clicks'),
-    State({'type': 'EDA-files-table', 'index': ALL}, 'selectedRows'),
-    State({'type': 'EDA-outputs-dropdown', 'index': ALL}, 'value'),
-    State('project-selection-dropdown-FitBit-EDA', 'value')
+    Output({'type': 'file-content-rhythmic', 'index': ALL}, 'children'),
+    Input({'type': 'show-preview-button-rhythmic', 'index': ALL}, 'n_clicks'),
+    State({'type': 'rhythmic-files-table', 'index': ALL}, 'selectedRows'),
+    State({'type': 'rhythmic-outputs-dropdown', 'index': ALL}, 'value'),
+    State('project-selection-dropdown-FitBit-rhythmic', 'value')
 )
 def show_file(n_clicks, selected_rows, selected_folder, project):
     print(f'preview_output: {n_clicks}')
