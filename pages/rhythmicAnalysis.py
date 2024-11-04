@@ -408,7 +408,7 @@ def run_preprocessing(n_clicks, raw_data, username, project):
         param3 = username
         
         if os.path.exists(rf'C:\Users\PsyLab-6028'):
-            script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\getEDA.py'
+            script_pxath = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\getEDA.py'
         else:
             script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\getEDA.py'
 
