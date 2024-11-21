@@ -15,7 +15,6 @@ import io
 from pymongo import MongoClient
 import dash_ag_grid as dag
 import dash
-from datetime import datetime
 from typing import Optional
 from pathlib import Path
 from tqdm import tqdm
@@ -23,7 +22,7 @@ import pandas as pd
 import configparser
 import numpy as np
 import polars as pl
-import datetime
+import datetime as dt
 import logging
 import pickle
 import shutil
@@ -43,7 +42,7 @@ import warnings
 
 
 FIRST, LAST = 0, -1
-now = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') # for the output files
+now = dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') # for the output files
 
 
 
@@ -196,9 +195,9 @@ def load_raw_data(n_clicks, project):
             print(f'File: {file}')
             if file.name.endswith('Heart Rate and Steps and Sleep Aggregated.csv'):
                 relevant_files.append(file)
-                creation_dates.append(file.stat().st_ctime)
-                n_dates = len(pl.read_csv(file).select(pl.col('DateAndMinute').cast(pl.Date)).unique())
-                n_samples = len(pl.read_csv(file))
+                creation_dates.append(dt.datetime.fromtimestamp(file.stat().st_ctime))
+                n_dates = len(pl.read_csv(file, try_parse_dates=True).select(pl.col('DateAndMinute').cast(pl.Date)).unique())
+                n_samples = len(pl.read_csv(file, try_parse_dates=True))
             
             
 
@@ -210,7 +209,7 @@ def load_raw_data(n_clicks, project):
             pl.DataFrame({
                 'subject': pl.Series([subject.name]),
                 'n_files': pl.Series([len(relevant_files)]),
-                'creation_date': pl.Series(creation_dates),
+                'creation_date': pl.Series([creation_dates]),
                 'n_dates': pl.Series([n_dates]),
                 'n_samples': pl.Series([n_samples])
             })
@@ -367,67 +366,67 @@ def show_available_data(n_clicks, selected_rows, project):
     State('project-selection-dropdown-FitBit-rhythmic', 'value')
 )
 def run_preprocessing(n_clicks, raw_data, username, project):
-    # if n_clicks == 0:
-    #     raise PreventUpdate
+    if n_clicks == 0:
+        raise PreventUpdate
     
-    # if n_clicks == []:
-    #     return False, False, ''
+    if n_clicks == []:
+        return False, False, ''
     
-    # if n_clicks[0] == 0:
-    #     return False, False, ''
+    if n_clicks[0] == 0:
+        return False, False, ''
     
-    # print(f'n_clicks: {n_clicks}')
+    print(f'n_clicks: {n_clicks}')
 
-    # df = pl.DataFrame(raw_data[0])
-    # print(f'Raw data: {df}')
+    df = pl.DataFrame(raw_data[0])
+    print(f'Raw data: {df}')
 
-    # if not df['run'].any():
-    #     return False, True, 'No subjects selected to run Rhythmic'
+    if not df['run'].any():
+        return False, True, 'No subjects selected to run Rhythmic'
     
-    # df = (
-    #     df
-    #     .filter(
-    #         pl.col('n_files') > 0
-    #     )
-    # )
+    df = (
+        df
+        .filter(
+            pl.col('n_files') > 0
+        )
+    )
 
-    # if os.path.exists(rf'C:\Users\PsyLab-6028'):
-    #     df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_rhythmic.parquet')
-    # else:
-    #     df.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_rhythmic.parquet')
+    if os.path.exists(rf'C:\Users\PsyLab-6028'):
+        df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_rhythmic.parquet')
+    else:
+        df.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_rhythmic.parquet')
 
-    # if username == '':
-    #     return False, True, 'Please enter your name before running the rhythmic analysis'
-    # # ls 
+    if username == '':
+        return False, True, 'Please enter your name before running the rhythmic analysis'
+    # ls 
         
 
-    # try:
+    try:
 
-    #     param = project
-    #     param2 = now
-    #     param3 = username
+        param = project
+        param2 = now
+        param3 = username
         
-    #     if os.path.exists(rf'C:\Users\PsyLab-6028'):
-    #         script_pxath = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\getEDA.py'
-    #     else:
-    #         script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\getEDA.py'
+        if os.path.exists(rf'C:\Users\PsyLab-6028'):
+            script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\getRhythm.py'
+        else:
+            script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\getRhythm.py'
 
-    #     if platform.system() == 'Windows':
-    #         command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'
-    #         print(command)
-    #     else:
-    #         command = f'python3 "{script_path}" {param} {param2} {param3}'
-    #         print(command)
+        if platform.system() == 'Windows':
+            command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'
+            print(command)
+        else:
+            command = f'python3 "{script_path}" {param} {param2} {param3}'
+            print(command)
 
-    #     process = subprocess.Popen(command, 
-    #                                stdout=subprocess.PIPE,
-    #                                stderr=subprocess.PIPE,
-    #                                shell=True)
+        process = subprocess.Popen(command, 
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   shell=True)
         
-    #     return True, False, ''
-    # except Exception as e:
-    #     print(e)
-    #     return False, True, str(e)
+        return True, False, ''
+    except Exception as e:
+        print(e)
+        return False, True, str(e)
     pass
 
     
@@ -524,7 +523,7 @@ def load_output(n_clicks, selected_folders, project):
 
     files_df = pd.DataFrame({
         'File': files,
-        'Creation Date': [datetime.datetime.fromtimestamp(files_dates[file]).strftime('%Y-%m-%d %H:%M:%S') for file in files]
+        'Creation Date': [dt.datetime.fromtimestamp(files_dates[file]).strftime('%Y-%m-%d %H:%M:%S') for file in files]
     })
 
     rows = files_df.to_dict('records')
