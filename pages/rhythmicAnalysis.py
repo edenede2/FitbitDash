@@ -462,19 +462,19 @@ def load_outputs(n_clicks, project):
     return html.Div([
         dcc.Dropdown(
             id={
-                'type': 'EDA-outputs-dropdown',
+                'type': 'rhythmic-outputs-dropdown',
                 'index': 1
             },
             options=dropdown_options,
             value=outputs_folders[0]
         ),
         dbc.Button('Load', id={
-            'type': 'load-EDA-outputs-button',
+            'type': 'load-rhythmic-outputs-button',
             'index': 1
         }, n_clicks=0, color='primary'),
 
         html.Div(id={
-            'type': 'EDA-outputs-container',
+            'type': 'rhythmic-outputs-container',
             'index': 1
         })
     ])
@@ -551,12 +551,12 @@ def load_output(n_clicks, selected_folders, project):
     )
 
     show_button = dbc.Button('Preview selected file', id={
-        'type': 'show-preview-button-EDA',
+        'type': 'show-preview-button-rhythmic',
         'index': 1
     }, n_clicks=0, color='primary')
 
     file_cotent = html.Div(id={
-        'type': 'file-content-EDA',
+        'type': 'file-content-rhythmic',
         'index': 1
     })
 
@@ -622,7 +622,7 @@ def show_file(n_clicks, selected_rows, selected_folder, project):
 
         table = dag.AgGrid(
             id={
-                'type': 'EDA-file-table',
+                'type': 'rhythmic-file-table',
                 'index': 1
             },
             columnDefs=columns_def,
@@ -657,7 +657,7 @@ def show_file(n_clicks, selected_rows, selected_folder, project):
 
         table = dag.AgGrid(
             id={
-                'type': 'EDA-file-table',
+                'type': 'rhythmic-file-table',
                 'index': 1
             },
             columnDefs=columns_def,
@@ -678,4 +678,3 @@ def show_file(n_clicks, selected_rows, selected_folder, project):
     
     else:
         return html.Div('File type not supported')
-    

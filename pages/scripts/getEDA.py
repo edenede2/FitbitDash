@@ -8,6 +8,7 @@ import h5py
 import webview
 # import dash_core_components as dcc
 from flask import Flask
+import pytz
 import subprocess
 import platform
 import base64
@@ -379,23 +380,18 @@ def main(project, now, username):
 
 
 
-# Function to get the last Friday of March and last Sunday of October for a given year
-def get_dst_change_dates(year):
-    # Last Friday of March
-    last_day_march = datetime.datetime(year, 3, 31)
-    last_friday_march = last_day_march - datetime.timedelta(days=(last_day_march.weekday() + 3) % 7)
 
-    # Last Sunday of October
-    last_day_october = datetime.datetime(year, 10, 31)
-    last_sunday_october = last_day_october - datetime.timedelta(days=(last_day_october.weekday() + 1) % 7)
 
-    return last_friday_march, last_sunday_october
-
-# Function to check if a date is a DST change date
-def is_dst_change(date):
-    year = date.year
-    last_friday_march, last_sunday_october = get_dst_change_dates(year)
-    return date.date() == last_friday_march.date() or date.date() == last_sunday_october.date()
+def is_dst_change(date: datetime.datetime) -> bool:
+    # Set the timezone to Jerusalem
+    jerusalem = pytz.timezone("Asia/Jerusalem")
+    
+    # Localize the provided date at midnight and the next day at midnight
+    midnight = jerusalem.localize(datetime.datetime(date.year, date.month, date.day))
+    next_midnight = jerusalem.localize(datetime.datetime(date.year, date.month, date.day) + datetime.timedelta(days=1))
+    
+    # Check if DST offset changes between the two midnights
+    return midnight.dst() != next_midnight.dst() 
 
 
                     
