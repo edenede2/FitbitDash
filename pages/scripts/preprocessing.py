@@ -48,7 +48,7 @@ warnings.filterwarnings('ignore')
 
 
 
-def main(project, now, username):
+def main(project, now, username, con_threashold, min_hr_threashold, max_hr_threashold):
     try:
         FIRST = 0
         LAST = -1
@@ -214,9 +214,9 @@ def main(project, now, username):
     #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$old filter$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
             # Set 1 at 'Valid' column where confidence is above 1 and heart rate bpm is between 40 to 180.
-            subject_HR_df.loc[(subject_HR_df['confidence'] > 0) &
-                            (subject_HR_df['bpm'] >= 40) &
-                            (subject_HR_df['bpm'] <= 180), 'valid'] = 1
+            subject_HR_df.loc[(subject_HR_df['confidence'] > con_threashold) &
+                            (subject_HR_df['bpm'] >= min_hr_threashold) &
+                            (subject_HR_df['bpm'] <= max_hr_threashold), 'valid'] = 1
 
             # Group by minute and count the number of bpm samples per minute.
             num_of_all_samples_df = subject_HR_df[['dateTime', 'bpm']].groupby(pd.Grouper(key='dateTime', freq='1Min')).agg(['count'])
@@ -491,9 +491,15 @@ if __name__ == '__main__':
         param = sys.argv[1]
         now = sys.argv[2]
         user_name = sys.argv[3]
+        con_threashold = int(sys.argv[4])
+        min_hr_threashold = int(sys.argv[5])
+        max_hr_threashold = int(sys.argv[6])
     except IndexError:
         param = 'FIBRO_TESTS'
         now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         user_name = 'Unknown'
+        con_threashold = 1
+        min_hr_threashold = 40
+        max_hr_threashold = 180
 
-    main(param, now, user_name)
+    main(param, now, user_name, con_threashold, min_hr_threashold, max_hr_threashold)

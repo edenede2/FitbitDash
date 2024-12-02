@@ -49,7 +49,7 @@ now = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') # for the output fil
 
 
 
-dash.register_page(__name__, name='HRV', order=9)
+dash.register_page(__name__, name='HRV', order=10)
 
 pages = {}
 

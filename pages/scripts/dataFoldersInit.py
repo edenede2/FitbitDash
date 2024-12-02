@@ -444,7 +444,7 @@ def main(project, now, username):
             "Datetime": [now],
             "Action": ['Copy Files'],
         })
-        exeHistory = pl.concat([exeHistory, exeHistoryUpdate])
+        exeHistory = pl.concat([exeHistory, exeHistoryUpdate], how='diagonal_relaxed')
 
 
     exeHistory.write_parquet(exeHistory_path)

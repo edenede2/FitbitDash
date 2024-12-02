@@ -248,6 +248,27 @@ def load_raw_data(n_clicks, project):
         'index': 1
     }, n_clicks=0, color='success')
 
+    parameters_card = dbc.Card([
+        dbc.CardHeader('Parameters for the heart rate preprocessing'),
+        dbc.CardBody([
+            dbc.Row([
+                dbc.Col([
+                    dbc.Label('Confidence level threshold (0-4):'),
+                    dbc.Input(id={ 'type': 'confidence-threshold-input', 'index': 1 }, type='number', value=1, min=0, max=4),
+                    html.P('The recommended range is 1-2')
+                ]),
+                dbc.Col([
+                    dbc.Label('Heart rate min threshold:'),
+                    dbc.Input(id={ 'type': 'hr-min-threshold-input', 'index': 1 }, type='number', value=40, min=0),
+                    dbc.Label('Heart rate max threshold:'),
+                    dbc.Input(id={ 'type': 'hr-max-threshold-input', 'index': 1 }, type='number', value=180, min=0),
+                    html.P('The recommended range is 40-180')
+                ])
+            ])
+        ])
+    ])
+
+
     run_selected_button = dbc.Button('Run only on selected subjects', id={
         'type': 'run-selected-preprocessing-button',
         'index': 1
@@ -262,6 +283,7 @@ def load_raw_data(n_clicks, project):
     return [
         html.H4('Raw data:'),
         grid,
+        parameters_card,
         run_button,
         show_button
     ]
@@ -388,9 +410,12 @@ def show_available_data(n_clicks, selected_rows, project):
     Input({'type': 'run-preprocessing-button', 'index': ALL}, 'n_clicks'),
     State({'type': 'raw-data-table', 'index': ALL}, 'rowData'),
     State('usenname-Preprocessing', 'value'),
-    State('project-selection-dropdown-FitBit-Preprocessing', 'value')
+    State('project-selection-dropdown-FitBit-Preprocessing', 'value'),
+    State({'type': 'confidence-threshold-input', 'index': ALL}, 'value'),
+    State({'type': 'hr-min-threshold-input', 'index': ALL}, 'value'),
+    State({'type': 'hr-max-threshold-input', 'index': ALL}, 'value'),
 )
-def run_preprocessing(n_clicks, raw_data, username, project):
+def run_preprocessing(n_clicks, raw_data, username, project, confidence_threshold, hr_min_threshold, hr_max_threshold):
     if n_clicks == 0:
         raise PreventUpdate
     
@@ -428,6 +453,9 @@ def run_preprocessing(n_clicks, raw_data, username, project):
         param = project
         param2 = now
         param3 = username
+        param4 = confidence_threshold[0]
+        param5 = hr_min_threshold[0]
+        param6 = hr_max_threshold[0]
 
         if os.path.exists(rf'C:\Users\PsyLab-6028'):
             script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\preprocessing.py'
@@ -435,10 +463,10 @@ def run_preprocessing(n_clicks, raw_data, username, project):
             script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\preprocessing.py'    
 
         if platform.system() == 'Windows':
-            command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'
+            command = f'start cmd /c python "{script_path}" {param} {param2} {param3} {param4} {param5} {param6}'
             print(command)
         else:
-            command = f'python3 "{script_path}" {param} {param2} {param3}'
+            command = f'python3 "{script_path}" {param} {param2} {param3} {param4} {param5} {param6}'
             print(command)
 
         process = subprocess.Popen(command, 
@@ -462,9 +490,12 @@ def run_preprocessing(n_clicks, raw_data, username, project):
     State({'type': 'raw-data-table', 'index': ALL}, 'selectedRows'),
     State('usenname-Preprocessing', 'value'),
     State('project-selection-dropdown-FitBit-Preprocessing', 'value'),
+    State({'type': 'confidence-threshold-input', 'index': ALL}, 'value'),
+    State({'type': 'hr-min-threshold-input', 'index': ALL}, 'value'),
+    State({'type': 'hr-max-threshold-input', 'index': ALL}, 'value'),
     prevent_initial_call=True
 )
-def run_preprocessing(n_clicks, selected_rows, username, project):
+def run_preprocessing(n_clicks, selected_rows, username, project, confidence_threshold, hr_min_threshold, hr_max_threshold):
     if n_clicks == 0:
         raise PreventUpdate
     
@@ -503,15 +534,19 @@ def run_preprocessing(n_clicks, selected_rows, username, project):
         param = project
         param2 = now
         param3 = username
+        param4 = confidence_threshold[0]
+        param5 = hr_min_threshold[0]
+        param6 = hr_max_threshold[0]
+
         if os.path.exists(rf'C:\Users\PsyLab-6028'):
             script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\preprocessing.py'
         else:
             script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\preprocessing.py'
         if platform.system() == 'Windows':
-            command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'
+            command = f'start cmd /c python "{script_path}" {param} {param2} {param3} {param4} {param5} {param6}'
             print(command)
         else:
-            command = f'python3 "{script_path}" {param} {param2} {param3}'
+            command = f'python3 "{script_path}" {param} {param2} {param3} {param4} {param5} {param6}'
             print(command)
 
         process = subprocess.Popen(command, 

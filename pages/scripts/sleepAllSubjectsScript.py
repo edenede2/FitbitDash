@@ -63,7 +63,7 @@ def main(project, now, username, exclude_thursday, exclude_friday):
         else:
             paths_json = json.load(open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "r"))    
 
-    
+
         project_path = Path(paths_json[project])
 
 
@@ -359,7 +359,7 @@ def main(project, now, username, exclude_thursday, exclude_friday):
                 "Datetime": [now],
                 "Action": ['Generate sleep all subjects file'],
             })
-            exeHistory = pl.concat([exeHistory, exeHistoryUpdate])
+            exeHistory = pl.concat([exeHistory, exeHistoryUpdate], how='diagonal_relaxed')
 
 
 
@@ -599,7 +599,7 @@ if __name__ == '__main__':
         exclude_thursday = bool(sys.argv[4])
         exclude_friday = bool(sys.argv[5])
     except IndexError:
-        param = 'FIBRO_TESTS'
+        param = 'NOVA_TESTS'
         now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         user_name = 'Unknown'
         exclude_thursday = False

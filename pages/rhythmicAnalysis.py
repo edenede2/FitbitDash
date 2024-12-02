@@ -98,16 +98,6 @@ layout = html.Div([
 
                 html.Hr()
             ]),
-            dbc.Row([
-                dbc.Col([
-                    dbc.Button(
-                        'Scan data folder',
-                        id='scan-folder-button-rhythmic',
-                        n_clicks=0,
-                        color='primary'
-                    )
-                ]),
-            ]),
         ]),
         dbc.Container([
             dbc.Row([
@@ -192,8 +182,8 @@ def load_raw_data(n_clicks, project):
         files_path = output_path / subject
         
         for file in files_path.iterdir():
-            print(f'File: {file}')
-            if file.name.endswith('Heart Rate and Steps and Sleep Aggregated.csv'):
+            print(f'File: {file.name}')
+            if file.name.endswith(' Heart Rate and Steps and Sleep Aggregated.csv'):
                 relevant_files.append(file)
                 creation_dates.append(dt.datetime.fromtimestamp(file.stat().st_ctime))
                 n_dates = len(pl.read_csv(file, try_parse_dates=True).select(pl.col('DateAndMinute').cast(pl.Date)).unique())
@@ -261,6 +251,138 @@ def load_raw_data(n_clicks, project):
         }
     )
 
+    
+    inclusions_params_card = dbc.Card([
+            dbc.CardHeader('Inclusions parameters', style={'font-size': '20px'}),
+            dbc.CardBody([
+                html.H5('Include dates when the subject was not in Israel?'),
+                html.P('By the not_in_israel xlsx file'),
+                dbc.Checkbox(id={'type':'include-dates-checkbox', 'index': 1}, value=False),
+                html.Br(),
+                html.H5('Include dates of dst changes?'),
+                dbc.Checkbox(id= { 'type': 'include-dst-checkbox', 'index': 1}, value=False)
+            ])
+        ])
+    
+    window_params_card = dbc.Card([
+            dbc.CardHeader('Window parameters', style={'font-size': '20px'}),
+            dbc.CardBody([
+                html.H5('Window size (in hours)'),
+                dcc.Slider(
+                    id={'type': 'window-size-slider', 'index': 1},
+                    min = 12,
+                    max = 168,
+                    step = 12,
+                    value = 24,
+                    marks = {
+                        12: '12',
+                        24: '24',
+                        36: '36',
+                        48: '48',
+                        60: '60',
+                        72: '72',
+                        84: '84',
+                        96: '96',
+                        108: '108',
+                        120: '120',
+                        132: '132',
+                        144: '144',
+                        156: '156',
+                        168: '168'
+                    }
+                ),
+                html.Br(),
+                html.H5('Increment size (in percent)'),
+                html.P('The increment size is the percentage of the window size that the window will move each time'),
+                dcc.Slider(
+                    id={'type': 'increment-size-slider', 'index': 1},
+                    min = 0,
+                    max = 100,
+                    step = 10,
+                    value = 50,
+                    marks = {
+                        0: '0',
+                        10: '10',
+                        20: '20',
+                        30: '30',
+                        40: '40',
+                        50: '50',
+                        60: '60',
+                        70: '70',
+                        80: '80',
+                        90: '90',
+                        100: '100'
+                    }
+                )
+            ]),
+        ])
+
+    analysis_params_card = dbc.Card([
+            dbc.CardHeader('Analysis parameters', style={'font-size': '20px'}),
+            dbc.CardBody([
+                html.H5('Downsample rate'),
+                html.P('The downsample rate is the rate at which the data will be downsampled'),
+                dcc.Slider(
+                    id={'type': 'downsample-rate-slider', 'index': 1},
+                    min = 1,
+                    max = 120,
+                    value = 5,
+                    marks = {
+                        1: {'label': '1 m', 'style': {'font-size': '10px'}},
+                        5: {'label': '5 m', 'style': {'font-size': '10px'}},
+                        10: {'label': '10 m', 'style': {'font-size': '10px'}},
+                        15: {'label': '15 m', 'style': {'font-size': '10px'}},
+                        30: {'label': '30 m', 'style': {'font-size': '10px'}},
+                        60: {'label': '1 H', 'style': {'font-size': '10px'}},
+                        120: {'label': '2 H', 'style': {'font-size': '10px'}}
+                    }
+                ),
+                html.Br(),
+                html.H5('Missing data threshold'),
+                html.P('The missing data threshold is the percentage of missing data per window that will be tolerated'),
+                dcc.Slider(
+                    id={'type': 'missing-data-threshold-slider', 'index': 1},
+                    min = 0,
+                    max = 100,
+                    value = 10,
+                    marks = {
+                        0: '0',
+                        10: '10',
+                        20: '20',
+                        30: '30',
+                        40: '40',
+                        50: '50',
+                        60: '60',
+                        70: '70',
+                        80: '80',
+                        90: '90',
+                        100: '100'
+                    }
+                ),
+                html.Br(),
+                html.H5('Data interpolation'),
+                html.P('To interpolate the data with sessional component decomposition and linear interpolation'),
+                dbc.Checkbox(id={'type': 'data-interpolation-checkbox', 'index': 1}, value=False),
+                html.Br(),
+                html.H5('Signal to analyze'),
+                html.P('Select the signal to analyze'),
+                dcc.Dropdown(
+                    id={'type': 'signal-dropdown', 'index': 1},
+                    options=[
+                        {'label': 'Heart Rate', 'value': 'BpmMean'},
+                        {'label': 'Steps', 'value': 'StepsInMinute'},
+                        {'label': 'Temperature', 'value': 'Temperature'}
+                    ],
+                    value='BpmMean'
+                )
+
+            ])
+        ])
+                        
+
+
+
+
     run_button = dbc.Button('Run rhythmic analysis', id={
         'type': 'run-rhythmic-button',
         'index': 1
@@ -272,11 +394,31 @@ def load_raw_data(n_clicks, project):
     }, n_clicks=0, color='warning')
 
 
+
     return [
-        html.H4('Raw data:'),
-        grid,
-        run_button,
-        show_button
+        dbc.Container([    
+            dbc.Row([
+                dbc.Col([
+                    html.H4('Raw data:'),
+                    grid,
+                ], width = 8),
+                dbc.Col([
+                    inclusions_params_card
+                ], width = 4),
+            ]),
+            dbc.Row([
+                window_params_card
+            ]),
+            dbc.Row([
+                analysis_params_card
+            ]),
+            dbc.Row([
+                dbc.Col([
+                    run_button,
+                    show_button
+                ])
+            ])
+        ])
     ]
 
 
@@ -363,9 +505,17 @@ def show_available_data(n_clicks, selected_rows, project):
     Input({'type': 'run-rhythmic-button', 'index': ALL}, 'n_clicks'),
     State({'type': 'raw-rhythmic-data-table', 'index': ALL}, 'rowData'),
     State('usenname-rhythmic', 'value'),
-    State('project-selection-dropdown-FitBit-rhythmic', 'value')
+    State('project-selection-dropdown-FitBit-rhythmic', 'value'),
+    State({'type': 'include-dates-checkbox', 'index': ALL}, 'value'),
+    State({'type': 'include-dst-checkbox', 'index': ALL}, 'value'),
+    State({'type': 'window-size-slider', 'index': ALL}, 'value'),
+    State({'type': 'increment-size-slider', 'index': ALL}, 'value'),
+    State({'type': 'downsample-rate-slider', 'index': ALL}, 'value'),
+    State({'type': 'missing-data-threshold-slider', 'index': ALL}, 'value'),
+    State({'type': 'data-interpolation-checkbox', 'index': ALL}, 'value'),
+    State({'type': 'signal-dropdown', 'index': ALL}, 'value')
 )
-def run_preprocessing(n_clicks, raw_data, username, project):
+def run_preprocessing(n_clicks, raw_data, username, project, include_not_in_il, include_dst, window_size, increment_size, downsample_rate, missing_data_threshold, data_interpolation, signal):
     if n_clicks == 0:
         raise PreventUpdate
     
@@ -383,6 +533,17 @@ def run_preprocessing(n_clicks, raw_data, username, project):
     if not df['run'].any():
         return False, True, 'No subjects selected to run Rhythmic'
     
+    print(f'Username: {username}')
+    print(f'Project: {project}')
+    print(f'Include dates: {include_not_in_il}')
+    print(f'Include dst: {include_dst}')
+    print(f'Window size: {window_size}')
+    print(f'Increment size: {increment_size}')
+    print(f'Downsample rate: {downsample_rate}')
+    print(f'Missing data threshold: {missing_data_threshold}')
+    print(f'Data interpolation: {data_interpolation}')
+    print(f'Signal: {signal}')
+
     df = (
         df
         .filter(
@@ -405,6 +566,15 @@ def run_preprocessing(n_clicks, raw_data, username, project):
         param = project
         param2 = now
         param3 = username
+        param4 = include_not_in_il[0]
+        param5 = include_dst[0]
+        param6 = window_size[0]
+        param7 = increment_size[0]
+        param8 = downsample_rate[0]
+        param9 = missing_data_threshold[0]
+        param10 = data_interpolation[0]
+        param11 = signal[0]
+
         
         if os.path.exists(rf'C:\Users\PsyLab-6028'):
             script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\getRhythm.py'
@@ -412,10 +582,10 @@ def run_preprocessing(n_clicks, raw_data, username, project):
             script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\getRhythm.py'
 
         if platform.system() == 'Windows':
-            command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'
+            command = f'start cmd /c python "{script_path}" {param} {param2} {param3} {param4} {param5} {param6} {param7} {param8} {param9} {param10} {param11}'
             print(command)
         else:
-            command = f'python3 "{script_path}" {param} {param2} {param3}'
+            command = f'python3 "{script_path}" {param} {param2} {param3} {param4} {param5} {param6} {param7} {param8} {param9} {param10} {param11}'
             print(command)
 
         process = subprocess.Popen(command, 

@@ -6,6 +6,7 @@ import datetime
 # from md2pdf.core import md2pdf
 import shutil
 import os
+import numpy as np
 import glob
 import re
 import sys
@@ -1896,6 +1897,12 @@ def new_get_latest_file_by_term(term: str, subject: Optional[str] = None, root: 
         pattern = r'^Sleep Daily Details Full Week.csv'
         # Set up path to the folder where Sleep Daily Summary Full Week file is.
         path = root
+    elif term == 'cosinor':
+        pattern = r'^.*\d{3} cosinor.csv$'
+        if subject is None:
+            raise Exception('Subject Id is required for cosinor file.')
+        # Set up path to the folder where Sleep Daily Summary Full Week file is.
+        path = root.joinpath(subject)
         
     if path == '':
         raise Exception(f'No path was found for term: {term}')

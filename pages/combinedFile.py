@@ -186,7 +186,7 @@ def load_raw_data_subjects(n_clicks, project):
     outputs_path = Path(path.joinpath('Outputs'))
 
     if not outputs_path.exists():
-        return html.Div('No outputs found found')
+        return html.Div('No outputs found')
 
     subjects_pattern = r'\d{3}$'
 
