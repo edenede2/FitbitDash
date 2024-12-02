@@ -152,12 +152,17 @@ def select_cosinor_file(n_clicks, project):
     if not cosinor_folder_path.exists():
         return dbc.Alert('The folder does not exist. Please generate it first in the combining files page.', color='danger')
     else:
-        cosinor_files = list(cosinor_folder_path.glob('^all_subjects_cosinor_w.*\.csv$'))
+
+        file_pattern = r'^all_subjects_cosinor_w'
+        cosinor_files = [file.split('/')[-1] for file in os.listdir(cosinor_folder_path) if re.search(file_pattern, file.split('/')[-1])]
+
+        # cosinor_files = list(cosinor_folder_path.glob('^all_subjects_cosinor_w'))
 
         if not cosinor_files:
             return dbc.Alert('There is no cosinor concatenate files.', color='danger')
         
-        cosinor_files = [file.name for file in cosinor_files]
+        cosinor_files = [file for file in cosinor_files if file.endswith('.csv')]
+
 
         cosinor_files_dropdown = dcc.Dropdown(
             id={'type':'cosinor-files-dropdown-RV', 'index': 1},
@@ -165,12 +170,15 @@ def select_cosinor_file(n_clicks, project):
                 {'label': file, 'value': file} for file in cosinor_files
             ],
             style={'color': 'black'},
-            value=cosinor_files[FIRST]
+            value=cosinor_files[0]
         )
+
+        loading_button = dbc.Button('Load', id={'type': 'load-cosinor-button-RV', 'index': 1}, n_clicks=0, color='primary')
 
         return [
             html.Div('Please select the Cosinor file:'),
-            cosinor_files_dropdown
+            cosinor_files_dropdown,
+            loading_button
         ]
         
 
@@ -178,7 +186,9 @@ def select_cosinor_file(n_clicks, project):
 
 @callback(
     Output('select-subjects-container-RV', 'children'),
-    Input('load-fitbit-button-RV', 'n_clicks'),
+    Output('selected-cosinor-file-name', 'data'),
+    # Input('load-fitbit-button-RV', 'n_clicks'),
+    Input({'type': 'load-cosinor-button-RV', 'index': 1}, 'n_clicks'),
     State('project-selection-dropdown-FitBit-RV', 'value'),
     State({'type':'cosinor-files-dropdown-RV', 'index': ALL}, 'value')
 )
@@ -188,16 +198,42 @@ def select_subjects(n_clicks, project, file):
     
     path = Pconfigs[project]
 
+    file = file[0]
+
+    params = {}
+
+    interval_sizve = 24
+    downsample_rate = 5
+
+    file_partitioned = file.split('_')
+    for i in file_partitioned:
+        if i.startswith('w'):
+            params['interval size'] = i[1:]
+            interval_size = i[1:]
+        if i.startswith('incr'):
+            params['increment'] = i[4:]
+        if i.startswith('ds'):
+            params['downsample rate'] = i[2:]
+            downsample_rate = i[2:]
+        if i.startswith('missingThr'):
+            params['missing threshold'] = i[10:]
+        if i.startswith('True'):
+            params['interpolate'] = True
+        if i.startswith('False'):
+            params['interpolate'] = False
+
+    params_to_store = str(interval_size) + '_' + str(downsample_rate)
+
     # Get the subjects
-    cosinor_file_path = Path(path).joinpath('Outputs').joinpath('Aggregated Output', file[0])
+    cosinor_file_path = Path(path).joinpath('Outputs').joinpath('Aggregated Output', file)
 
     if not cosinor_file_path.exists():
-        return dbc.Alert('The file does not exist. Please generate it first in the rhythmic page.', color='danger')
+        return dbc.Alert('The file does not exist. Please generate it first in the rhythmic page.', color='danger'), ''
     
-    df = pl.read_parquet(cosinor_file_path)
+    df = pl.read_csv(cosinor_file_path, try_parse_dates=True)
 
     if df.is_empty():
-        return dbc.Alert('The file is empty.', color='danger')
+        return dbc.Alert('The file is empty.', color='danger'), ''
     
     subjects = df['Id'].unique().to_list()
 
@@ -277,317 +313,310 @@ def select_subjects(n_clicks, project, file):
         n_clicks=0
     )
 
+    params_description = dbc.Card(
+        dbc.CardBody(
+            [
+                html.H4('Parameters:'),
+                html.P(f'Interval Size: {params["interval size"]}'),
+                html.P(f'Increment: {params["increment"]}'),
+                html.P(f'Downsample Rate: {params["downsample rate"]}'),
+                html.P(f'Missing Threshold: {params["missing threshold"]}'),
+                html.P(f'Interpolate: {params["interpolate"]}')
+            ]
+        )
+    )
+
     return [
         dbc.Row([
             dbc.Col([
                 grid
             ]),
             dbc.Col([
+                params_description,
                 show_selected_button,
                 hide_selected_button,
                 show_all_button
             ])
         ])
-    ]
+    ], params_to_store
 
 
 
 
-def make_cards(df:pl.DataFrame, subjects=None):
+def make_cards(df_est:pl.DataFrame, df_visu:pl.DataFrame, desc_dict:dict ,subjects=None, params_to_store=None):
     cards = []
 
-    # Convert DateAndMinute to datetime format and filter by Mode
-    df = (
-        df.sort('Id')
-    )
+    df_est = df_est.sort('Id')
+    df_visu = df_visu.sort('Id')
+
+
+    downsample_rate = int(params_to_store.split('_')[1])
+    period_size = int(params_to_store.split('_')[0]) *60 / downsample_rate
+    
+
 
     for i, subject in zip(range(0,len(subjects)) ,subjects):
+        sub_cards = []
 
 
         if subjects and subject not in subjects:
             continue
 
-        subject_data = (
-            df
+        subject_est_data = (
+            df_est
             .filter(
                 pl.col('Id') == subject
                 )
         )
 
+        subject_visu_data = (
+            df_visu
+            .filter(
+                pl.col('Id') == subject
+                )
+        )
+
+        subject_desc = desc_dict[subject]
+
         # Create line plot for BpmMean
-        fig_bpm = go.Figure()
+        fig_cartes = go.Figure()
         
+        for date in subject_est_data['test']:
+            est_date_data = subject_est_data.filter(pl.col('test') == date)
+            visu_date_data = subject_visu_data.filter(pl.col('test') == date)
+            date_desc = subject_desc[date]
 
-        custom_data = subject_data.select(['Mode', 'Mode2', 'Feature', 'ValidSleep', 'Weekend', 'outliers', 'not_in_israel'])
+            x_data = visu_date_data['x']
+            y_data = visu_date_data['y']
+            y_interpolated = visu_date_data['interpolated_y']
 
+            amplitude = date_desc['amplitude'] + date_desc['mesor']
+            mesor = date_desc['mesor']
 
-        # Create line plot for StepsInMinute
-        fig_steps = go.Figure()
-        fig_bpm.add_trace(go.Scatter(
-            x=subject_data['DateAndMinute'], 
-            y=subject_data['StepsInMinute'], 
-            mode='lines', 
-            name='StepsInMinute'
-        ))
+            adj_r2 = date_desc['r_squared_adj']
+            r_squared = date_desc['r_squared']
 
-        max_bpm = subject_data.select(pl.col('BpmMean').max()).item()
-        min_bpm = subject_data.select(pl.col('BpmMean').min()).item()
-        max_steps = subject_data.select(pl.col('StepsInMinute').max()).item()
-        min_steps = subject_data.select(pl.col('StepsInMinute').min()).item()
+            x_est = est_date_data['estimated_x']
+            y_est = est_date_data['estimated_y']
 
-        subject_data = (
-            subject_data
-            .with_columns(
-                sleep_intervals_bpm=pl.when(pl.col('Mode') == 'sleeping').then(pl.lit(min_bpm)).otherwise(pl.lit(max_bpm)),
-                sleep_intervals_steps=pl.when(pl.col('Mode') == 'sleeping').then(pl.lit((min_steps))).otherwise(pl.lit(max_steps))
+            y_est_max_loc = date_desc['y_estimated_max_loc']
+            y_est_min_loc = date_desc['y_estimated_min_loc']
+            y_estimated_min = date_desc['y_estimated_min']
+
+            if y_interpolated is not None:
+                fig_cartes.add_trace(go.Scatter(x=x_data, y=y_interpolated, mode='markers', name='Interpolated Data'))
+
+            fig_cartes.add_trace(go.Scatter(x=x_data, y=y_data, mode='markers', name='Original Data'))
+            fig_cartes.add_trace(go.Scatter(x=x_est, y=y_est, mode='lines', name='Estimated Curve'))
+            fig_cartes.add_trace(go.Scatter(x=x_est, y=[mesor]*len(x_est), mode='lines', name='MESOR'))
+            fig_cartes.add_shape(
+                type='line',
+                x0=y_est_max_loc,
+                y0=mesor,
+                x1=y_est_max_loc,
+                y1=amplitude,
+                line=dict(
+                    color='red',
+                    width=2,
+                    dash='dashdot'
                 )
-        )
-  
-
-        fig_bpm.add_trace(go.Scatter(
-            x=subject_data['DateAndMinute'],
-            y=subject_data['sleep_intervals_bpm'],
-            mode='lines',
-            name='Sleeping',
-            line=dict(color='red'),
-            customdata=subject_data.select('Mode').to_pandas(),
-            hovertemplate='Time: %{x} <br> Mode: %{customdata[0]}'
-        ))
-        
-   
-        q_25_bpm = (
-            subject_data
-            .select(pl.col('BpmMean'))
-            .quantile(0.25)
-            .item()
-        )
-
-        q_50_bpm = (
-            subject_data
-            .select(pl.col('BpmMean'))
-            .quantile(0.50)
-            .item()
-        )
-
-        q_75_bpm = (
-            subject_data
-            .select(pl.col('BpmMean'))
-            .quantile(0.75)
-            .item()
-        )
-
-        # Dendrogram for sleep stages from Mode2
-        sleep_data = (
-            subject_data
-            .select('DateAndMinute', 'Mode2')
-            .with_columns(
-                Mode2_num=pl.when(pl.col('Mode2') == 'awake')
-                .then(pl.lit(max_bpm))
-                .when(pl.col('Mode2') == 'sleep_awake')
-                .then(pl.lit(max_bpm))
-                .when(pl.col('Mode2') == 'light')
-                .then(pl.lit(q_75_bpm))
-                .when(pl.col('Mode2') == 'rem')
-                .then(pl.lit(q_50_bpm))
-                .when(pl.col('Mode2') == 'deep')
-                .then(pl.lit(q_25_bpm))
-                .when(pl.col('Mode2') == 'restless')
-                .then(pl.lit(q_75_bpm))
-                .when(pl.col('Mode2') == 'asleep')
-                .then(pl.lit(q_25_bpm))
-                .otherwise(pl.lit(np.nan))
             )
-        )
 
-        fig_bpm.add_trace(go.Scatter(
-            x=sleep_data['DateAndMinute'],
-            y=sleep_data['Mode2_num'],
-            mode='lines',
-            name='Sleep Stages',
-            visible='legendonly',
-            customdata=sleep_data.select('Mode2').to_pandas(),
-            hovertemplate='Time: %{x} <br> Sleep Stage: %{customdata}'
-        ))
-
-        feature_data = (
-            subject_data
-            .select('DateAndMinute', 'Feature')
-            .with_columns(
-                features_num=pl.when(pl.col('Feature') == 'high_activity')
-                .then(pl.lit(max_bpm))
-                .when(pl.col('Feature') == 'med_activity')
-                .then(pl.lit(q_75_bpm))
-                .when(pl.col('Feature') == 'low_activity')
-                .then(pl.lit(q_50_bpm))
-                .when(pl.col('Feature') == 'rest')
-                .then(pl.lit(q_25_bpm))
-                .when(pl.col('Feature') == 'sleep')
-                .then(pl.lit(min_bpm))
-                .otherwise(pl.lit(np.nan))
+            fig_cartes.add_shape(
+                type='line',
+                x0=y_est_min_loc,
+                y0=mesor,
+                x1=y_est_min_loc,
+                y1=y_estimated_min,
+                line=dict(
+                    color='red',
+                    width=2,
+                    dash='dashdot'
+                )
             )
-        )
 
-        fig_bpm.add_trace(go.Scatter(
-            x=feature_data['DateAndMinute'],
-            y=feature_data['features_num'],
-            mode='lines',
-            name='Feature',
-            visible='legendonly',
-            customdata=feature_data.select('Feature').to_pandas(),
-            hovertemplate='Time: %{x} <br> BpmMean: %{y} <br> Feature: %{customdata}'
-        ))
-
-        valid_sleep = (
-            subject_data
-            .select('DateAndMinute', 'ValidSleep')
-            .with_columns(
-                valid_sleep_num=pl.when(pl.col('ValidSleep') == True)
-                .then(pl.lit(min_bpm))
-                .when(pl.col('ValidSleep') == False)
-                .then(pl.lit(max_bpm))
-                .otherwise(pl.lit(np.nan))
-            ) 
-        )
-
-        fig_bpm.add_trace(go.Scatter(
-            x=valid_sleep['DateAndMinute'],
-            y=valid_sleep['valid_sleep_num'],
-            mode='lines',
-            name='ValidSleep',
-            visible='legendonly',
-            customdata=valid_sleep.select('ValidSleep').to_pandas(),
-            hovertemplate='Time: %{x} <br> BpmMean: %{y} <br> ValidSleep: %{customdata}'
-        )
-        )
-
-        weekend = (
-            subject_data
-            .select('DateAndMinute', 'Weekend')
-            .with_columns(
-                weekend_num=pl.when(pl.col('Weekend') == True)
-                .then(pl.lit(max_bpm))
-                .when(pl.col('Weekend') == False)
-                .then(pl.lit(min_bpm))
-                .otherwise(pl.lit(np.nan))
+            fig_cartes.add_annotation(
+                x=y_est_max_loc,
+                y=amplitude,
+                text='Max',
+                showarrow=True,
+                arrowhead=1
             )
-        )
 
-        fig_bpm.add_trace(go.Scatter(
-            x=weekend['DateAndMinute'],
-            y=weekend['weekend_num'],
-            mode='lines',
-            name='Weekend',
-            visible='legendonly',
-            customdata=weekend.select('Weekend').to_pandas(),
-            hovertemplate='Time: %{x} <br> BpmMean: %{y} <br> Weekend: %{customdata}'
-        )
-        )
-
-
-        outliers = (
-            subject_data
-            .select('DateAndMinute', 'outliers')
-            .with_columns(
-                outliers_num=pl.when(pl.col('outliers') == True)
-                .then(pl.lit(max_bpm))
-                .when(pl.col('outliers') == False)
-                .then(pl.lit(min_bpm))
-                .otherwise(pl.lit(np.nan))
+            fig_cartes.add_annotation(
+                x=y_est_min_loc,
+                y=y_estimated_min,
+                text='Min',
+                showarrow=True,
+                arrowhead=1
             )
-        )
 
-        fig_bpm.add_trace(go.Scatter(
-            x=outliers['DateAndMinute'],
-            y=outliers['outliers_num'],
-            mode='lines',
-            name='Outliers',
-            visible='legendonly',
-            customdata=outliers.select('outliers').to_pandas(),
-            hovertemplate='Time: %{x} <br> BpmMean: %{y} <br> Outliers: %{customdata}'
-        )
-        )
-
-        not_in_IL = (
-            subject_data
-            .select('DateAndMinute', 'not_in_israel')
-            .with_columns(
-                not_in_IL_num=pl.when(pl.col('not_in_israel') == True)
-                .then(pl.lit(max_bpm))
-                .when(pl.col('not_in_israel') == False)
-                .then(pl.lit(min_bpm))
-                .otherwise(pl.lit(np.nan))
+            fig_cartes.update_layout(
+                title=f'Subject: {subject} Interval: {date}',
+                xaxis_title='Time (absolute)',
+                yaxis_title='Signal',
+                showlegend=True
             )
-        )
 
-        fig_bpm.add_trace(go.Scatter(
-            x=not_in_IL['DateAndMinute'],
-            y=not_in_IL['not_in_IL_num'],
-            mode='lines',
-            name='Not in IL',
-            visible='legendonly',
-            customdata=not_in_IL.select('not_in_israel').to_pandas(),
-            hovertemplate='Time: %{x} <br> BpmMean: %{y} <br> Not in IL: %{customdata}'
-        )
-        )
+            fig_cartes.update_layout(
+                annotations=[
+                    dict(
+                        x=0.5,
+                        y=1.1,
+                        xref='paper',
+                        yref='paper',
+                        text=f'R^2: {r_squared} Adj R^2: {adj_r2}',
+                        showarrow=False
+                    )
+                ]
+            )
 
-        fig_bpm.add_trace(go.Scatter(
-            x=subject_data['DateAndMinute'], 
-            y=subject_data['BpmMean'], 
-            mode='lines', 
-            name='BpmMean',
-            customdata=custom_data.to_pandas(),
-            hovertemplate='Time: %{x} <br> BpmMean: %{y} <br> Sleep Stage: %{customdata[1]} <br> Feature: %{customdata[2]} <br> Weekend: %{customdata[4]} <br> Outliers: %{customdata[5]} <br> Not in IL: %{customdata[6]}'
-        ))
+            theta = date_desc['theta']
+            acrophase = quadrant_adjustment(theta, date_desc['acrophase'], radian=True)
 
-        select_segments_to_exclude_slider = dbc.Button(
-            'Select Segments to Exclude',
-            id={
-                'type': 'select-segments-to-exclude-button-RV',
-                'index': i
-            },
-            color='Warning',
-            n_clicks=0
-        )
+            amplitude = date_desc['amplitude']
+            mesor = date_desc['mesor']
 
-        # Add the figures to the card
-        sub_card = dbc.Card(
-            id={'type': 'card-RV', 
-                'index': i
-            },
-            children=[
-                dbc.CardHeader(f'Subject: {subject}'),
-                dbc.CardBody(
-                    [
-                        dcc.Graph(figure=fig_bpm),
-                    ],
-                    id={
-                        'type': 'card-body-RV1',
-                        'index': i
-                    }
+
+            center_r = [0, amplitude]
+            center_theta = [0, acrophase]
+
+            fig_polar = go.Figure()
+            fig_polar.add_trace(go.Scatterpolar(
+                r=[amplitude],
+                theta=[acrophase],
+                mode='markers',
+                name='Acrophase',
+                marker=dict(
+                    size=10,
+                    color='red'
+                )
+            ))
+
+            fig_polar.add_trace(go.Scatterpolar(
+                r=center_r,
+                theta=center_theta,
+                mode='lines',
+                line=dict(
+                    color='green',
+                    width=2
                 ),
-                dbc.CardBody(
-                    [
-                        select_segments_to_exclude_slider
-                    ],
-                    id={
-                        'type': 'card-body-RV',
-                        'index': i
-                    }
-                )
-            ]
-        )
-        
+                name='Radius Line'
+            ))
 
-        cards.append(sub_card)
+            hours, hours_deg = generate_polarticks(period_size, period_size)
+
+            fig_polar.update_layout(
+                title=f'Subject: {subject} Interval: {date}',
+                polar=dict(
+                    angularaxis=dict(
+                        tickmode='array',
+                        tickvals=hours_deg,
+                        ticktext=hours,
+                        direction='clockwise',
+                        rotation=0,
+                        thetaunit='degrees'
+                    ),
+                )
+            )
+
+            sub_cards.append(
+                dbc.Card(
+                    children=[
+                        dbc.CardHeader(f'Subject: {subject} Interval: {date}'),
+                        dbc.CardBody(
+                            [
+                                dcc.Graph(figure=fig_cartes),
+                            ],
+                            id={ 'type': 'card-body-RV1', 'index': i}
+                        ),
+                        dbc.CardBody(
+                            [
+                                dcc.Graph(figure=fig_polar),
+                            ],
+                            id={ 'type': 'card-body-RV2', 'index': i}
+                        )
+                    ]
+                )
+            )
+
+            
+
+
+
+        cards.append(sub_cards)
 
     return cards 
 
 
 
 
+def quadrant_adjustment(thta, acrphs, radian=True):
+    # Check which quadrant the acrophase falls into
+    if 0 <= thta < (np.pi / 2):
+        if radian:
+            corrected_acrophase = acrphs
+        else:
+            # First quadrant: no correction needed
+            corrected_acrophase = np.rad2deg(acrphs)
+    elif (np.pi / 2) <= thta < np.pi:
+        # Second quadrant: subtract a constant to realign
+        if radian:
+            corrected_acrophase = acrphs 
+        else:
+            corrected_acrophase =  np.rad2deg(acrphs)
+    elif np.pi <= thta < (3 * np.pi / 2):
+        # Third quadrant: make it negative
+        if radian:
+            corrected_acrophase = 2 * np.pi - acrphs
+        else:
+            corrected_acrophase = 360 - np.rad2deg(acrphs)
+    elif (3 * np.pi / 2) <= thta < (2 * np.pi):
+        if radian:
+            corrected_acrophase = 2 * np.pi - acrphs
+        else:
+            # Fourth quadrant: shift to bring into biological range
+            corrected_acrophase = 360 - np.rad2deg(acrphs)
+    else:
+        # If outside normal bounds, wrap it
+        corrected_acrophase = acrphs % (2 * np.pi)
+
+    return corrected_acrophase
         
 
 
+def generate_polarticks(period, select_period_size, half_day = False):
+    total_hours = period
+
+    num_ticks = 12
+
+    tick_interval = select_period_size / num_ticks
+
+    hours = []
+    hours_deg = []
+
+    if (select_period_size /24) < 1 :
+        for i in range(num_ticks + 1):
+            hour = i * tick_interval
+            deg = (i * 360) / num_ticks
+            hour_int = int(hour % 24)
+            label = f"{hour_int:02d}:00"
+            hours.append(label)
+            hours_deg.append(deg)
+    else:
+        for i in range(num_ticks +1):
+            hour = i * tick_interval
+            deg = (i * 360) / num_ticks
+            if half_day:
+                hour_int = int(hour % 24) + 12
+            else:
+                hour_int = int(hour % 24)
+            day = int(hour // 24) + 1
+            label = f"Day {day} - {hour_int:02d}:00"
+            hours.append(label)
+            hours_deg.append(deg)
+
+    return hours, hours_deg
 
 @callback(
     Output('raw-data-subjects-container-RV', 'children'),
@@ -595,38 +624,62 @@ def make_cards(df:pl.DataFrame, subjects=None):
     Input({'type': 'show-selected-button-RV', 'index': ALL}, 'n_clicks'),
     State('project-selection-dropdown-FitBit-RV', 'value'),
     State({'type': 'select-subjects-grid-RV', 'index': ALL}, 'rowData'),
-    State({'type': 'cosinor-files-dropdown-RV', 'index': ALL}, 'value')
+    State({'type': 'cosinor-files-dropdown-RV', 'index': ALL}, 'value'),
+    State('selected-cosinor-file-name', 'data'),
 )
-def load_subjects(n_clicks, project, rows, file):
+def load_subjects(n_clicks, project, rows, file, params_to_store):
     if n_clicks == 0:
         raise PreventUpdate
     
     path = Pconfigs[project]
 
+    file = file[0]
+
     # Get the subjects
-    cosinor_file_path = Path(path).joinpath('Outputs').joinpath('Aggregated Output', file[0])
+    estimated_curve_file_name = (str(file).replace('cosinor_', 'estimates_')).replace('.csv', '.parquet')
+    estimated_curve_file_path = Path(path).joinpath('Outputs').joinpath('Aggregated Output', estimated_curve_file_name)
 
-    if not cosinor_file_path.exists():
-        return dbc.Alert('The file does not exist. Please generate it first in the rhythmic page.', color='danger'), []
+    visu_file_name = (str(file).replace('cosinor_', 'visu_')).replace('.csv', '.parquet')
+    visu_file_path = Path(path).joinpath('Outputs').joinpath('Aggregated Output', visu_file_name)
+
+    desc_json_file_name = (str(file).replace('cosinor_', 'json_')).replace('.csv', '.json')
+    desc_json_file_path = Path(path).joinpath('Outputs').joinpath('Aggregated Output', desc_json_file_name)
+
+    if not estimated_curve_file_path.exists():
+        return dbc.Alert('The file estimated curve file does not exist. Please generate it first in the rhythmic page.', color='danger'), []
     
-    df = pl.read_parquet(cosinor_file_path)
+    if not visu_file_path.exists():
+        return dbc.Alert('The file visu file does not exist. Please generate it first in the rhythmic page.', color='danger'), []
+    
+    if not desc_json_file_path.exists():
+        return dbc.Alert('The file description json file does not exist. Please generate it first in the rhythmic page.', color='danger'), []
+    
+    estimated_df = pl.read_parquet(estimated_curve_file_path)
+    visu_df = pl.read_parquet(visu_file_path)
+    desc_json = json.load(open(desc_json_file_path, 'r'))
+    
 
-    if df.is_empty():
-        return dbc.Alert('The file is empty.', color='danger'), []
+    if estimated_df.is_empty() or visu_df.is_empty():
+        return dbc.Alert('One of the files is empty.', color='danger'), []
     
     selected_subjects = [row['Id'] for row in rows[0] if row['show']]
+
 
     print(selected_subjects)
 
     if not selected_subjects:
         return dbc.Alert('Please select at least one subject.', color='danger'), []
     
-    df = df.filter(pl.col('Id').is_in(selected_subjects))
+    estimated_sub_df = estimated_df.filter(pl.col('Id').is_in(selected_subjects))
+    visu_sub_df = visu_df.filter(pl.col('Id').is_in(selected_subjects))
+
+    subs_desc_dict = {subject: desc_json[subject] for subject in selected_subjects}
 
 
 
 
-    cards = make_cards(df, selected_subjects)
+
+    cards = make_cards(estimated_sub_df, visu_sub_df, subs_desc_dict, selected_subjects, params_to_store)
 
 
 
@@ -656,73 +709,93 @@ def hide_plots(n_clicks, project):
     Output('subjects-RV', 'data', allow_duplicate=True),
     Input({'type': 'show-all-button-RV', 'index': ALL}, 'n_clicks'),
     State('project-selection-dropdown-FitBit-RV', 'value'),
+    State('subjects-RV', 'data'),
+    State({'type': 'cosinor-files-dropdown-RV', 'index': ALL}, 'value'),
+    State('selected-cosinor-file-name', 'data'),
     prevent_initial_call=True
 )
-def show_all(n_clicks, project):
+def show_all(n_clicks, project, subjects, file, params_to_store):
     if n_clicks == 0:
         raise PreventUpdate
     if n_clicks[0] == 0:
         raise PreventUpdate
     path = Pconfigs[project]
 
+    file = file[0]
     # Get the subjects
-    minute_reso_path = Path(path).joinpath('Outputs').joinpath('Aggregated Output', 'All_Subjects_1_Minute_Resolution.parquet')
+    estimated_curve_file_name = (str(file).replace('cosinor_', 'estimates_')).replace('.csv', '.parquet')
+    estimated_curve_file_path = Path(path).joinpath('Outputs').joinpath('Aggregated Output', estimated_curve_file_name)
 
-    if not minute_reso_path.exists():
-        return dbc.Alert('The file does not exist. Please generate it first in the combining files page.', color='danger'), []
+    visu_file_name = (str(file).replace('cosinor_', 'visu_')).replace('.csv', '.parquet')
+    visu_file_path = Path(path).joinpath('Outputs').joinpath('Aggregated Output', visu_file_name)
+
+    desc_json_file_name = (str(file).replace('cosinor_', 'json_')).replace('.csv', '.json')
+    desc_json_file_path = Path(path).joinpath('Outputs').joinpath('Aggregated Output', desc_json_file_name)
+
+    if not estimated_curve_file_path.exists():
+        return dbc.Alert('The file estimated curve file does not exist. Please generate it first in the rhythmic page.', color='danger'), []
     
-    df = pl.read_parquet(minute_reso_path)
-
-    subjects = df['Id'].unique().to_list()
-
-    if df.is_empty():
-        return dbc.Alert('The file is empty.', color='danger'), []
+    if not visu_file_path.exists():
+        return dbc.Alert('The file visu file does not exist. Please generate it first in the rhythmic page.', color='danger'), []
     
-    cards = make_cards(df, subjects)
+    if not desc_json_file_path.exists():
+        return dbc.Alert('The file description json file does not exist. Please generate it first in the rhythmic page.', color='danger'), []
+    
+    estimated_df = pl.read_parquet(estimated_curve_file_path)
+    visu_df = pl.read_parquet(visu_file_path)
+    desc_json = json.load(open(desc_json_file_path, 'r'))
+
+    if estimated_df.is_empty() or visu_df.is_empty():
+        return dbc.Alert('One of the files is empty.', color='danger'), []
+    
+    subs_desc_dict = {subject: desc_json[subject] for subject in subjects}
+
+    cards = make_cards(estimated_df, visu_df, subs_desc_dict, subjects, params_to_store)
+
 
     return cards, subjects
 
 
 
 
-@callback(
-    Output({'type': 'card-body-RV', 'index': MATCH}, 'children'),
-    Input({'type': 'select-segments-to-exclude-button-RV', 'index': MATCH}, 'n_clicks'),
-    State('project-selection-dropdown-FitBit-RV', 'value'),
-    State({'type': 'card-body-RV', 'index': MATCH}, 'children'),
-    State('subjects-RV', 'data'),
-    prevent_initial_call=True
-)
-def select_segments_to_exclude(n_clicks, project, children, subjects):
-    if n_clicks == 0:
-        raise PreventUpdate
+# @callback(
+#     Output({'type': 'card-body-RV', 'index': MATCH}, 'children'),
+#     Input({'type': 'select-segments-to-exclude-button-RV', 'index': MATCH}, 'n_clicks'),
+#     State('project-selection-dropdown-FitBit-RV', 'value'),
+#     State({'type': 'card-body-RV', 'index': MATCH}, 'children'),
+#     State('subjects-RV', 'data'),
+#     prevent_initial_call=True
+# )
+# def select_segments_to_exclude(n_clicks, project, children, subjects):
+#     if n_clicks == 0:
+#         raise PreventUpdate
     
-    print(f'children: {children}')
-    print(f'n_clicks: {n_clicks}')
+#     print(f'children: {children}')
+#     print(f'n_clicks: {n_clicks}')
     
-    slider = dcc.RangeSlider(
-        id={
-            'type': 'range-slider-RV',
-            'index': n_clicks
-        },
-        min=0,
-        max=100,
-        step=1,
-        marks={i: str(i) for i in range(0, 101, 10)},
-        value=[0, 100]
-    )
+#     slider = dcc.RangeSlider(
+#         id={
+#             'type': 'range-slider-RV',
+#             'index': n_clicks
+#         },
+#         min=0,
+#         max=100,
+#         step=1,
+#         marks={i: str(i) for i in range(0, 101, 10)},
+#         value=[0, 100]
+#     )
     
-    accept_button = dbc.Button(
-        'Save',
-        id={
-            'type': 'accept-button-RV',
-            'index': n_clicks
-        },
-        color='success',
-        n_clicks=0,
-        className='d-block'
-    )
+#     accept_button = dbc.Button(
+#         'Save',
+#         id={
+#             'type': 'accept-button-RV',
+#             'index': n_clicks
+#         },
+#         color='success',
+#         n_clicks=0,
+#         className='d-block'
+#     )
 
-    new_children = children + [slider, accept_button]
+#     new_children = children + [slider, accept_button]
 
-    return new_children
+#     return new_children
