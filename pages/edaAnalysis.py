@@ -34,7 +34,7 @@ import os
 import re
 import tkinter as tk
 from tkinter import filedialog
-import scripts.UTILS.utils as ut
+import pages.scripts.UTILS.utils as ut
 
 # from Test.Remove_sub.utils import get_latest_file_by_term as new_get_latest_file_by_term
 import warnings
@@ -52,7 +52,7 @@ dash.register_page(__name__, name='EDA', order=11)
 
 pages = {}
 
-Pconfigs = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
+Pconfigs = json.load(open(ut.convert_path_to_current_os(r".\pages\Pconfigs\paths.json"), "r"))
 
 
 for key in Pconfigs.keys():
@@ -433,7 +433,7 @@ def run_preprocessing(n_clicks, raw_data, username, project):
         param2 = now
         param3 = username
         
-        script_path = r'.\pages\scripts\getEDA.py'
+        script_path = ut.convert_path_to_current_os(r'.\pages\scripts\getEDA.py')
 
         if platform.system() == 'Windows':
             command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'

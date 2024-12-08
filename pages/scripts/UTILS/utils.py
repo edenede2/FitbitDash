@@ -13,10 +13,26 @@ import sys
 import tkinter as tk
 from tkinter import ttk
 import tkinter.messagebox as messagebox
-sys.path.append(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages')
+import platform
+sys.path.append(r'.\pages')
 
-from Test.Remove_sub.utils import get_latest_file_by_term as new_get_latest_file_by_term
-
+# from Test.Remove_sub.utils import get_latest_file_by_term as new_get_latest_file_by_term
+def convert_path_to_current_os(path: str) -> str:
+    current_os = platform.system().lower()
+    
+    if 'windows' in current_os:
+        # On Windows, we can keep the path as is
+        return path
+    else:
+        # On macOS or other Unix-like systems, convert backslashes to forward slashes
+        converted_path = path.replace('\\', '/')
+        
+        # If the path starts with "./" or ".\", it should already be correct as relative
+        # Just ensure it's "./" instead of ".\"
+        if converted_path.startswith('.\\'):
+            converted_path = converted_path.replace('.\\', './', 1)
+        
+        return converted_path
 
 def add_feature_2_column(subject_heart_rate_steps_df, sub_id):
     
