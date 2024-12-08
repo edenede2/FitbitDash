@@ -34,6 +34,7 @@ import os
 import re
 import tkinter as tk
 from tkinter import filedialog
+import scripts.UTILS.utils as ut
 
 # from Test.Remove_sub.utils import get_latest_file_by_term as new_get_latest_file_by_term
 import warnings
@@ -51,7 +52,7 @@ dash.register_page(__name__, name='set up', order=2)
 
 pages = {}
 
-Pconfigs = json.load(open(r"G:\Shared drives\AdmonPsy - Lab Resources\Projects\FitbitDash\pages\Pconfigs\paths.json", "r"))
+Pconfigs = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
 
 for key in Pconfigs.keys():
     page_name = key
@@ -144,7 +145,7 @@ def load_fitbit_data(n_clicks, project):
     
 
     
-    paths_json = json.load(open(r"G:\Shared drives\AdmonPsy - Lab Resources\Projects\FitbitDash\pages\Pconfigs\paths.json", "r"))
+    paths_json = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
     project_path = Path(paths_json[project])
 
 
@@ -153,7 +154,7 @@ def load_fitbit_data(n_clicks, project):
 
 
         
-    PROJECT_CONFIG = json.load(open(r'G:\Shared drives\AdmonPsy - Lab Resources\Projects\FitbitDash\pages\Pconfigs\paths data.json', 'r'))
+    PROJECT_CONFIG = json.load(open(r'.\pages\Pconfigs\paths data.json', 'r'))
         
     SUBJECTS_DATES = METADATA_PATH.joinpath('Subjects Dates.csv')
 
@@ -327,12 +328,12 @@ def initialize_folders(n_clicks, selected_rows, project, username):
     if n_clicks == 0:
         raise PreventUpdate
 
-    paths_json = json.load(open(r"G:\Shared drives\AdmonPsy - Lab Resources\Projects\FitbitDash\pages\Pconfigs\paths.json", "r"))
+    paths_json = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
     project_path = Path(paths_json[project])
 
     DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT = ut.declare_project_global_variables(project_path)
 
-    PROJECT_CONFIG = json.load(open(r'G:\Shared drives\AdmonPsy - Lab Resources\Projects\FitbitDash\pages\Pconfigs\paths data.json', 'r'))
+    PROJECT_CONFIG = json.load(open(r'.\pages\Pconfigs\paths data.json', 'r'))
 
     if not selected_rows:
         raise PreventUpdate
@@ -342,10 +343,7 @@ def initialize_folders(n_clicks, selected_rows, project, username):
         'Date': [datetime.datetime.now().strftime('%Y-%m-%d') for row in selected_rows[0]]
     })
     
-    if os.path.exists(rf'C:\Users\PsyLab-6028'):
-        selected_rows_df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_init.parquet')
-    else:
-        selected_rows_df.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_init.parquet')
+    selected_rows_df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_folders_init.parquet')
 
     if username == '':
         return False, True, 'Please enter your name'
@@ -360,10 +358,7 @@ def initialize_folders(n_clicks, selected_rows, project, username):
         param2 = now
         param3 = username
         # Define the command to run the script
-        if os.path.exists(rf'C:\Users\PsyLab-6028'):
-            script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\dataFoldersInit.py'
-        else:
-            script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\dataFoldersInit.py'  
+        script_path = r'.\pages\scripts\dataFoldersInit.py'  
 
         if platform.system() == "Windows":
             command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'  # Adjust this for non-Windows systems if needed
@@ -404,12 +399,12 @@ def initialize_folders(n_clicks, rows, project, username):
     if n_clicks == 0:
         raise PreventUpdate
 
-    paths_json = json.load(open(r"G:\Shared drives\AdmonPsy - Lab Resources\Projects\FitbitDash\pages\Pconfigs\paths.json", "r"))
+    paths_json = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
     project_path = Path(paths_json[project])
 
     DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT = ut.declare_project_global_variables(project_path)
 
-    PROJECT_CONFIG = json.load(open(r'G:\Shared drives\AdmonPsy - Lab Resources\Projects\FitbitDash\pages\Pconfigs\paths data.json', 'r'))
+    PROJECT_CONFIG = json.load(open(r'.\pages\Pconfigs\paths data.json', 'r'))
 
     if not rows:
         raise PreventUpdate
@@ -419,10 +414,7 @@ def initialize_folders(n_clicks, rows, project, username):
         'Date': [datetime.datetime.now().strftime('%Y-%m-%d') for row in rows[0]]
     })
     
-    if os.path.exists(rf'C:\Users\PsyLab-6028'):
-        selected_rows_df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_init.parquet')
-    else:
-        selected_rows_df.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_init.parquet')
+    selected_rows_df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_folders_init.parquet')
 
     if username == '':
         return False, True, 'Please enter your name'
@@ -437,10 +429,7 @@ def initialize_folders(n_clicks, rows, project, username):
         param2 = now
         param3 = username
         # Define the command to run the script
-        if os.path.exists(rf'C:\Users\PsyLab-6028'):
-            script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\dataFoldersInit.py'
-        else:
-            script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\dataFoldersInit.py'
+        script_path = r'.\pages\scripts\dataFoldersInit.py'
             
         if platform.system() == "Windows":
             command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'  # Adjust this for non-Windows systems if needed

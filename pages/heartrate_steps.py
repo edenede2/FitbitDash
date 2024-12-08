@@ -34,6 +34,7 @@ import os
 import re
 import tkinter as tk
 from tkinter import filedialog
+import scripts.UTILS.utils as ut
 
 # from Test.Remove_sub.utils import get_latest_file_by_term as new_get_latest_file_by_term
 import warnings
@@ -51,10 +52,8 @@ dash.register_page(__name__, name='Preprocessing', order=4)
 
 pages = {}
 
-try:
-    Pconfigs = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
-except:
-    Pconfigs = json.load(open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "r"))
+Pconfigs = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
+
 
 for key in Pconfigs.keys():
     page_name = key
@@ -438,10 +437,7 @@ def run_preprocessing(n_clicks, raw_data, username, project, confidence_threshol
             pl.col('steps_files') > 0,
         )
     )
-    if os.path.exists(rf'C:\Users\PsyLab-6028'):
-        df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_Preprocessing.parquet')
-    else:
-        df.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_Preprocessing.parquet')    
+    df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_folders_Preprocessing.parquet')   
     if username == '':
         return False, True, 'Please enter your name before running the preprocessing'
         
@@ -455,10 +451,7 @@ def run_preprocessing(n_clicks, raw_data, username, project, confidence_threshol
         param5 = hr_min_threshold[0]
         param6 = hr_max_threshold[0]
 
-        if os.path.exists(rf'C:\Users\PsyLab-6028'):
-            script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\preprocessing.py'
-        else:
-            script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\preprocessing.py'    
+        script_path = r'.\pages\scripts\preprocessing.py'
 
         if platform.system() == 'Windows':
             command = f'start cmd /c python "{script_path}" {param} {param2} {param3} {param4} {param5} {param6}'
@@ -518,10 +511,7 @@ def run_preprocessing(n_clicks, selected_rows, username, project, confidence_thr
             pl.col('steps_files') > 0,
         )
     )
-    if os.path.exists(rf'C:\Users\PsyLab-6028'):
-        df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_Preprocessing.parquet')
-    else:
-        df.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_Preprocessing.parquet')    
+    df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_folders_Preprocessing.parquet')    
 
     if username == '':
         return False, True, 'Please enter your name before running the preprocessing'
@@ -536,10 +526,7 @@ def run_preprocessing(n_clicks, selected_rows, username, project, confidence_thr
         param5 = hr_min_threshold[0]
         param6 = hr_max_threshold[0]
 
-        if os.path.exists(rf'C:\Users\PsyLab-6028'):
-            script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\preprocessing.py'
-        else:
-            script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\preprocessing.py'
+        script_path = r'.\pages\scripts\preprocessing.py'
         if platform.system() == 'Windows':
             command = f'start cmd /c python "{script_path}" {param} {param2} {param3} {param4} {param5} {param6}'
             print(command)

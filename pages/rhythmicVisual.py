@@ -36,6 +36,7 @@ import os
 import re
 import tkinter as tk
 from tkinter import filedialog
+import scripts.UTILS.utils as ut
 
 # from Test.Remove_sub.utils import get_latest_file_by_term as new_get_latest_file_by_term
 import warnings
@@ -52,10 +53,8 @@ now = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') # for the output fil
 dash.register_page(__name__, name='Rhythmic Visualization', order=9)
 
 pages = {}
-try:
-    Pconfigs = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
-except:
-    Pconfigs = json.load(open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "r"))
+Pconfigs = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
+
 
 for key in Pconfigs.keys():
     page_name = key
@@ -756,44 +755,4 @@ def show_all(n_clicks, project, subjects, file, params_to_store):
 
 
 
-# @callback(
-#     Output({'type': 'card-body-RV', 'index': MATCH}, 'children'),
-#     Input({'type': 'select-segments-to-exclude-button-RV', 'index': MATCH}, 'n_clicks'),
-#     State('project-selection-dropdown-FitBit-RV', 'value'),
-#     State({'type': 'card-body-RV', 'index': MATCH}, 'children'),
-#     State('subjects-RV', 'data'),
-#     prevent_initial_call=True
-# )
-# def select_segments_to_exclude(n_clicks, project, children, subjects):
-#     if n_clicks == 0:
-#         raise PreventUpdate
-    
-#     print(f'children: {children}')
-#     print(f'n_clicks: {n_clicks}')
-    
-#     slider = dcc.RangeSlider(
-#         id={
-#             'type': 'range-slider-RV',
-#             'index': n_clicks
-#         },
-#         min=0,
-#         max=100,
-#         step=1,
-#         marks={i: str(i) for i in range(0, 101, 10)},
-#         value=[0, 100]
-#     )
-    
-#     accept_button = dbc.Button(
-#         'Save',
-#         id={
-#             'type': 'accept-button-RV',
-#             'index': n_clicks
-#         },
-#         color='success',
-#         n_clicks=0,
-#         className='d-block'
-#     )
 
-#     new_children = children + [slider, accept_button]
-
-#     return new_children

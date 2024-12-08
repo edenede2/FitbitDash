@@ -34,6 +34,7 @@ import os
 import re
 import tkinter as tk
 from tkinter import filedialog
+import scripts.UTILS.utils as ut
 
 # from Test.Remove_sub.utils import get_latest_file_by_term as new_get_latest_file_by_term
 import warnings
@@ -51,10 +52,8 @@ dash.register_page(__name__, name='EDA', order=11)
 
 pages = {}
 
-try:
-    Pconfigs = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
-except:
-    Pconfigs = json.load(open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "r"))
+Pconfigs = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
+
 
 for key in Pconfigs.keys():
     page_name = key
@@ -421,10 +420,8 @@ def run_preprocessing(n_clicks, raw_data, username, project):
             pl.col('eda_sessions_files') > 0,
         )
     )
-    if os.path.exists(rf'C:\Users\PsyLab-6028'):
-        df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_EDA.parquet')
-    else:
-        df.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_EDA.parquet')
+    
+    df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_folders_EDA.parquet')
 
     if username == '':
         return False, True, 'Please enter your name before running the EDA'
@@ -436,10 +433,7 @@ def run_preprocessing(n_clicks, raw_data, username, project):
         param2 = now
         param3 = username
         
-        if os.path.exists(rf'C:\Users\PsyLab-6028'):
-            script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\getEDA.py'
-        else:
-            script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\getEDA.py'
+        script_path = r'.\pages\scripts\getEDA.py'
 
         if platform.system() == 'Windows':
             command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'

@@ -608,16 +608,10 @@ def main(project, username, now):
 
     try:
         print('Downloading data...')
-        try:
-            exeHistory_path = Path(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\ExecutionHis\exeHistory.parquet')
-        except Exception as e:
-            exeHistory_path = Path(r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\ExecutionHis\exeHistory.parquet')
+        exeHistory_path = Path(r'.\pages\ExecutionHis\exeHistory.parquet')
         exeHistory = pl.read_parquet(exeHistory_path)
 
-        try:
-            paths_json = json.load(open(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths data.json', 'r'))
-        except:
-            paths_json = json.load(open(r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths data.json', 'r'))
+        paths_json = json.load(open(r'.\pages\Pconfigs\paths data.json', 'r'))
 
     
         project_path = Path(paths_json[project])
@@ -635,10 +629,7 @@ def main(project, username, now):
             DATA_PATH.mkdir()
 
 
-        try:
-            api_data_path = Path(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_download_api.parquet')
-        except:
-            api_data_path = Path(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_download_api.parquet')
+        api_data_path = Path(rf'.\pages\sub_selection\{project}_sub_selection_download_api.parquet')
     
         data_df = pl.read_parquet(api_data_path)
 

@@ -34,6 +34,7 @@ import os
 import re
 import tkinter as tk
 from tkinter import filedialog
+import scripts.UTILS.utils as ut
 
 # from Test.Remove_sub.utils import get_latest_file_by_term as new_get_latest_file_by_term
 import warnings
@@ -50,10 +51,8 @@ now = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') # for the output fil
 dash.register_page(__name__, name='Combined File Generation', order=5)
 
 pages = {}
-try:
-    Pconfigs = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
-except:
-    Pconfigs = json.load(open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "r"))
+Pconfigs = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
+
 
 for key in Pconfigs.keys():
     page_name = key
@@ -188,10 +187,8 @@ def load_raw_data_subjects(n_clicks, project):
 
     subjects_pattern = r'\d{3}$'
 
-    if os.path.exists(r'C:\Users\PsyLab-6028'):
-        updated_basic_files_stats = rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_Combined.parquet'
-    else:
-        updated_basic_files_stats = rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_Combined.parquet'   
+    updated_basic_files_stats = rf'.\pages\sub_selection\{project}_sub_selection_Combined.parquet'   
+
 
     if not Path(updated_basic_files_stats).exists():
         initiate_basic_table_button = dbc.Button(
@@ -326,10 +323,7 @@ def initiate_basic_table(n_clicks, project, user_name):
         param4 = include_weekends
         param5 = exclude_weekends
 
-        if os.path.exists(r'C:\Users\PsyLab-6028'):
-            script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\combinedFileScript.py'
-        else:
-            script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\combinedFileScript.py'
+        script_path = r'.\pages\scripts\combinedFileScript.py'
 
         if platform.system() == 'Windows':
             command = f'start cmd /c python "{script_path}" {param} {param2} {param3} {param4} {param5}'
@@ -383,10 +377,7 @@ def refresh_selected(n_clicks, rows, project, user_name):
         .drop('run')
     )
 
-    if os.path.exists(r'C:\Users\PsyLab-6028'):
-        selected_rows.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_refresh_Combined.parquet')
-    else:
-        selected_rows.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_refresh_Combined.parquet')
+    selected_rows.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_refresh_Combined.parquet')
 
 
     if user_name == '':
@@ -402,10 +393,7 @@ def refresh_selected(n_clicks, rows, project, user_name):
         param3 = user_name
         param4 = include_weekends
         param5 = exclude_weekends
-        if os.path.exists(r'C:\Users\PsyLab-6028'):
-            script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\combinedFileScript.py'
-        else:
-            script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\combinedFileScript.py'
+        script_path = r'.\pages\scripts\combinedFileScript.py'
         if platform.system() == 'Windows':
             command = f'start cmd /c python "{script_path}" {param} {param2} {param3} {param4} {param5}'
             print(command)
@@ -462,10 +450,7 @@ def generate_file(n_clicks, rows, project, user_name):
     exclude_weekends = False
 
 
-    if os.path.exists(r'C:\Users\PsyLab-6028'):
-        updated_basic_df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_gen_Combined.parquet')
-    else:
-        updated_basic_df.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_gen_Combined.parquet')
+    updated_basic_df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_gen_Combined.parquet')
 
     if user_name == '':
         return False, '', True, 'Please enter your name before generating the file'
@@ -480,11 +465,7 @@ def generate_file(n_clicks, rows, project, user_name):
         param4 = include_weekends
         param5 = exclude_weekends
 
-        if os.path.exists(r'C:\Users\PsyLab-6028'):
-            script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\getCombinedFileScript.py'
-        else:
-            script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\getCombinedFileScript.py'
-            
+        script_path = r'.\pages\scripts\getCombinedFileScript.py'
 
         if platform.system() == 'Windows':
             command = f'start cmd /c python "{script_path}" {param} {param2} {param3} {param4} {param5}'

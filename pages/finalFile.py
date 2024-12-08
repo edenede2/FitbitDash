@@ -34,6 +34,7 @@ import os
 import re
 import tkinter as tk
 from tkinter import filedialog
+import scripts.UTILS.utils as ut
 
 # from Test.Remove_sub.utils import get_latest_file_by_term as new_get_latest_file_by_term
 import warnings
@@ -50,11 +51,7 @@ now = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') # for the output fil
 dash.register_page(__name__, name='Final File', order=12)
 
 pages = {}
-
-try:
-    Pconfigs = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
-except:
-    Pconfigs = json.load(open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "r"))
+Pconfigs = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
 
 for key in Pconfigs.keys():
     page_name = key
@@ -492,10 +489,7 @@ def run_preprocessing(n_clicks, raw_data, username, project):
             pl.col('sleep_daily_summary') | pl.col('full_week_heart_rate_of_sleep_summary_means') | pl.col('HRV_tempe_resp_summary') | pl.col('mindfulness_summary')
         )
     )
-    if os.path.exists(rf'C:\Users\PsyLab-6028'):
-        df.write_parquet(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_Final.parquet')
-    else:
-        df.write_parquet(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_Final.parquet')    
+    df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_folders_Final.parquet')
 
     if username == '':
         return False, True, 'Please enter your name before running the Final generation script'
@@ -506,10 +500,7 @@ def run_preprocessing(n_clicks, raw_data, username, project):
         param = project
         param2 = now
         param3 = username
-        if os.path.exists(rf'C:\Users\PsyLab-6028'):
-            script_path = r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\scripts\getFinal.py'
-        else:
-            script_path = r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\scripts\getFinal.py'
+        script_path = r'.\pages\scripts\getFinal.py'
 
         if platform.system() == 'Windows':
             command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'

@@ -53,16 +53,10 @@ try:
         
         FIRST = 0
         LAST = -1
-        if os.path.exists(rf'C:\Users\PsyLab-6028'):
-            exeHistory_path = Path(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\ExecutionHis\exeHistory.parquet')
-        else:
-            exeHistory_path = Path(r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\ExecutionHis\exeHistory.parquet')   
+        exeHistory_path = Path(r'.\pages\ExecutionHis\exeHistory.parquet')   
 
         exeHistory = pl.read_parquet(exeHistory_path)
-        if os.path.exists(rf'C:\Users\PsyLab-6028'):
-            paths_json = json.load(open(r"C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths.json", "r"))
-        else:
-            paths_json = json.load(open(r"C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths.json", "r"))    
+        paths_json = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
 
         project_path = Path(paths_json[project])
 
@@ -75,10 +69,7 @@ try:
         if not AGGREGATED_OUTPUT_PATH_HISTORY.exists():
             os.makedirs(AGGREGATED_OUTPUT_PATH_HISTORY)
         
-        if os.path.exists(rf'C:\Users\PsyLab-6028'):
-            PROJECT_CONFIG = json.load(open(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\Pconfigs\paths data.json', 'r'))
-        else:
-            PROJECT_CONFIG = json.load(open(r'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\Pconfigs\paths data.json', 'r'))    
+        PROJECT_CONFIG = json.load(open(r'.\pages\Pconfigs\paths data.json', 'r'))    
         SUBJECTS_DATES = METADATA_PATH.joinpath('Subjects Dates.csv')
 
 
@@ -88,10 +79,7 @@ try:
 
 
         subjects_dates_df = subjects_dates.sort(by='Id').unique('Id').drop_nulls('Id')
-        if os.path.exists(rf'C:\Users\PsyLab-6028'):
-            selected_subjects_path = Path(rf'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_rhythmic.parquet')
-        else:
-            selected_subjects_path = Path(rf'C:\Users\PsyLab-7084\Documents\GitHub\FitbitDash\pages\sub_selection\{project}_sub_selection_folders_rhythmic.parquet')
+        selected_subjects_path = Path(rf'.\pages\sub_selection\{project}_sub_selection_folders_rhythmic.parquet')
             
         subjects_to_run_on = []
 
