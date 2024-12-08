@@ -34,9 +34,7 @@ import os
 import re
 import tkinter as tk
 from tkinter import filedialog
-sys.path.append(r'G:\Shared drives\AdmonPsy - Code\Idanko\Scripts')
 
-import UTILS.utils as ut
 # from Test.Remove_sub.utils import get_latest_file_by_term as new_get_latest_file_by_term
 import warnings
 
