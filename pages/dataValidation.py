@@ -192,6 +192,10 @@ def load_fitbit_data(n_clicks, project):
             if not os.path.exists(Path(PROJECT_CONFIG[project]).joinpath(sub_name, 'FITBIT')):
                 print(f'No FITBIT folder for {sub_name}')
                 continue
+            folders_to_search = ['Sleep', 'Physical Activity', 'Stress']
+            if not all([folder_ in os.listdir(Path(PROJECT_CONFIG[project]).joinpath(sub_name, 'FITBIT')) for folder_ in folders_to_search]):
+                print(f'Not all folders for {sub_name} are present')
+                continue
             for folder_ in os.listdir(Path(PROJECT_CONFIG[project]).joinpath(sub_name, 'FITBIT')):
                 if 'Sleep' in folder_:
                     sleep_json_pattern = r'^sleep-'

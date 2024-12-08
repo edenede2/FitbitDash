@@ -75,7 +75,7 @@ def main(project, now, username):
 
 
     subjects_dates_df = subjects_dates.sort(by='Id').unique('Id').drop_nulls('Id')
-    selected_subjects_path = Path(rf'.\pages\sub_selection\{project}_sub_selection_folders_EDA.parquet')
+    selected_subjects_path = Path(rf'.\pages\sub_selection\{project}_sub_selection_folders_HRV.parquet')
         
     subjects_to_run_on = []
 
@@ -772,3 +772,4 @@ if __name__ == '__main__':
         user_name = 'Unknown'
 
     main(param, now, user_name)
+    time.sleep(10)

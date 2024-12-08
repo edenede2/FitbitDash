@@ -8,7 +8,7 @@ import pages.scripts.UTILS.utils as ut
 
 flask_app = Flask(__name__)
 
-app = dash.Dash(__name__, server=flask_app, external_stylesheets=[dbc.themes.CYBORG], use_pages=True)
+app = dash.Dash(__name__, server=flask_app, external_stylesheets=[dbc.themes.CERULEAN], use_pages=True)
 
 # window = webview.create_window('FitBit App', flask_app, width=800, height=600, resizable=True, fullscreen=False)
 
@@ -33,7 +33,7 @@ app.layout = dbc.Container([
         [
         dbc.Col(
             [
-            html.Img(src=ut.convert_path_to_current_os(r'\assets\EmbeddedImage.jpg'), style={'width': '100%'})
+            html.Img(src=ut.convert_path_to_current_os(r'\assets\logo transperant (1).png'), style={'width': '100%'})
             ], width=2),
         dbc.Col(
             [

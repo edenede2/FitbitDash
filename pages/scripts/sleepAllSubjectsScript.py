@@ -45,7 +45,7 @@ warnings.filterwarnings('ignore')
 
 
 
-def main(project, now, username, exclude_thursday, exclude_friday):
+def main(project, now, username):
     try:
         FIRST = 0
         LAST = -1
@@ -99,9 +99,11 @@ def main(project, now, username, exclude_thursday, exclude_friday):
 
             quit()
 
+
         # Load the subjects dates of experiment file.
         subjects_dates_df = pl.read_parquet(rf'.\pages\sub_selection\{project}_sub_selection_sleep_all_subjects.parquet').sort(by='Id').unique('Id').drop_nulls('Id')    
-
+        subjects_to_run_on = subjects_dates_df['Id']
+        print(f"Subjects to run on: {subjects_to_run_on}")
         subjects_dates_df = (
             subjects_dates_df
             .select(
@@ -110,10 +112,12 @@ def main(project, now, username, exclude_thursday, exclude_friday):
             .join(
                 subjects_dates,
                 on='Id',
-                how='inner'
+                how='right'
             )
 
         )
+
+        subjects_dates_df = subjects_dates_df.filter(pl.col('Id').is_in(subjects_to_run_on))
 
 
         # run_it = ut.create_new_sleep_all_subjects_csv_window()
@@ -582,13 +586,11 @@ if __name__ == '__main__':
         param = sys.argv[1]
         now = sys.argv[2]
         user_name = sys.argv[3]
-        exclude_thursday = bool(sys.argv[4])
-        exclude_friday = bool(sys.argv[5])
+
     except IndexError:
         param = 'NOVA_TESTS'
         now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         user_name = 'Unknown'
-        exclude_thursday = False
-        exclude_friday = False
 
-    main(param, now, user_name, exclude_thursday, exclude_friday)
+    print(param, now, user_name)
+    main(param, now, user_name)
