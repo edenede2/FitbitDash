@@ -210,7 +210,7 @@ def main(project, now, username, con_threashold, min_hr_threashold, max_hr_threa
     #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$old filter$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
             # Set 1 at 'Valid' column where confidence is above 1 and heart rate bpm is between 40 to 180.
-            subject_HR_df.loc[(subject_HR_df['confidence'] > con_threashold) &
+            subject_HR_df.loc[(subject_HR_df['confidence'] >= con_threashold) &
                             (subject_HR_df['bpm'] >= min_hr_threashold) &
                             (subject_HR_df['bpm'] <= max_hr_threashold), 'valid'] = 1
 
@@ -490,6 +490,7 @@ if __name__ == '__main__':
         con_threashold = int(sys.argv[4])
         min_hr_threashold = int(sys.argv[5])
         max_hr_threashold = int(sys.argv[6])
+
     except IndexError:
         param = 'FIBRO_TESTS'
         now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')

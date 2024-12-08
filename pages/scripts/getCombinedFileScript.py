@@ -44,7 +44,7 @@ warnings.filterwarnings('ignore')
 
 
 
-def main(project, now, username, include_weekends, exclude_weekends):
+def main(project, now, username):
     FIRST = 0
     LAST = -1
     if os.path.exists(rf'C:\Users\PsyLab-6028'):
@@ -1314,14 +1314,12 @@ if __name__ == '__main__':
         param = sys.argv[1]
         now = sys.argv[2]
         user_name = sys.argv[3]
-        include_weekend = sys.argv[4]
-        exclude_weekend = sys.argv[5]
+
     except IndexError:
         param = 'FIBRO_TESTS'
         now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         user_name = 'Unknown'
-        include_weekend = False
-        exclude_weekend = True
+
 
     print(f'Generating the files for {param}...')
     print(f'Include weekend: {include_weekend}')
