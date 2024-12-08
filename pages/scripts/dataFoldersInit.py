@@ -34,7 +34,7 @@ import os
 import re
 import tkinter as tk
 from tkinter import filedialog
-sys.path.append(r'G:\Shared drives\AdmonPsy - Code\Idanko\Scripts')
+# sys.path.append(r'G:\Shared drives\AdmonPsy - Code\Idanko\Scripts')
 
 import UTILS.utils as ut
 import warnings

@@ -35,10 +35,7 @@ import os
 import re
 import tkinter as tk
 from tkinter import filedialog
-if os.path.exists(rf'C:\Users\PsyLab-6028'):
-    sys.path.append(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages')
-else:
-    sys.path.append(r'C:\Users\PsyLab-6028\Desktop\FitbitDash\pages')
+
 
 import UTILS.utils as ut
 # from Test.Remove_sub.utils import get_latest_file_by_term as new_get_latest_file_by_term

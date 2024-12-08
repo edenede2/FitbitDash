@@ -19,7 +19,6 @@ from zipfile import ZipFile, ZIP_DEFLATED
 import os
 import sys
 import polars as pl
-sys.path.append(r'G:\Shared drives\AdmonPsy - Code\Idanko\Scripts')
 
 import UTILS.utils as ut
 

@@ -520,25 +520,25 @@ def make_cards(df_est:pl.DataFrame, df_visu:pl.DataFrame, desc_dict:dict ,subjec
                 )
             )
 
-            sub_cards.append(
-                dbc.Card(
-                    children=[
-                        dbc.CardHeader(f'Subject: {subject} Interval: {date}'),
-                        dbc.CardBody(
-                            [
-                                dcc.Graph(figure=fig_cartes),
-                            ],
-                            id={ 'type': 'card-body-RV1', 'index': i}
-                        ),
-                        dbc.CardBody(
-                            [
-                                dcc.Graph(figure=fig_polar),
-                            ],
-                            id={ 'type': 'card-body-RV2', 'index': i}
-                        )
-                    ]
-                )
+        sub_cards.append(
+            dbc.Card(
+                children=[
+                    dbc.CardHeader(f'Subject: {subject} Interval: {date}'),
+                    dbc.CardBody(
+                        [
+                            dcc.Graph(figure=fig_cartes),
+                        ],
+                        id={ 'type': 'card-body-RV1', 'index': i}
+                    ),
+                    dbc.CardBody(
+                        [
+                            dcc.Graph(figure=fig_polar),
+                        ],
+                        id={ 'type': 'card-body-RV2', 'index': i}
+                    )
+                ]
             )
+        )
 
             
 
