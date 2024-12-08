@@ -421,7 +421,7 @@ def run_preprocessing(n_clicks, raw_data, username, project):
         )
     )
     
-    df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_folders_EDA.parquet')
+    df.write_parquet(ut.convert_path_to_current_os(rf'.\pages\sub_selection\{project}_sub_selection_folders_EDA.parquet'))
 
     if username == '':
         return False, True, 'Please enter your name before running the EDA'

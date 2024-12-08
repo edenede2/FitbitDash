@@ -51,7 +51,7 @@ dash.register_page(__name__, name='extract sleep data', order=3)
 
 pages = {}
 
-Pconfigs = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
+Pconfigs = json.load(open(ut.convert_path_to_current_os(r".\pages\Pconfigs\paths.json"), "r"))
 
 
 for key in Pconfigs.keys():
@@ -150,7 +150,7 @@ def load_fitbit_data(n_clicks, project):
     
 
     
-    paths_json = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
+    paths_json = json.load(open(ut.convert_path_to_current_os(r".\pages\Pconfigs\paths.json"), "r"))
     project_path = Path(paths_json[project])
 
 

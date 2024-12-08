@@ -33,7 +33,7 @@ app.layout = dbc.Container([
         [
         dbc.Col(
             [
-            html.Img(src=r'\assets\EmbeddedImage.jpg', style={'width': '100%'})
+            html.Img(src=ut.convert_path_to_current_os(r'\assets\EmbeddedImage.jpg'), style={'width': '100%'})
             ], width=2),
         dbc.Col(
             [
