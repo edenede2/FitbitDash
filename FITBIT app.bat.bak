@@ -1,5 +1,5 @@
 @echo off
-cd C:\Users\PsyLab-7084\Desktop\classDesign1\FitbitDash
+cd C:\Users\PsyLab-6028\Desktop\FitbitDash
 call .venv\Scripts\activate
 python app.py
 pause

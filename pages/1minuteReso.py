@@ -52,7 +52,7 @@ now = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S') # for the output fil
 dash.register_page(__name__, name='Stats Visualization', order=6)
 
 pages = {}
-Pconfigs = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
+Pconfigs = json.load(open(r'.\pages\Pconfigs\paths.json', "r"))
 
 
 for key in Pconfigs.keys():
