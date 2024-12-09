@@ -51,7 +51,7 @@ def main(project, now, username):
     exeHistory_path = Path(r'.\pages\ExecutionHis\exeHistory.parquet')
 
     exeHistory = pl.read_parquet(exeHistory_path)
-    paths_json = json.load(open(r".\pages\Pconfigs\paths.json", "r"))  
+    paths_json = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
 
     
     project_path = Path(paths_json[project])
