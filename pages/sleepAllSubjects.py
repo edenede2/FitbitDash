@@ -533,7 +533,7 @@ def show_file(n_clicks, selected_rows, selected_folder, project):
             id_dropdown_disabled = True
         else:
             if df_size < 2000:
-                id_options = [{'label': str(val), 'value': str(val)} for val in [unique_values + ['All']]]
+                id_options = [{'label': str(val), 'value': str(val)} for val in unique_values + ['All']]
                 id_dropdown_disabled = False
             else:
                 id_options = [{'label': str(val), 'value': str(val)} for val in unique_values]
