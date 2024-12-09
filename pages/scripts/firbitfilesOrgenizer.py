@@ -15,6 +15,7 @@ import zipfile
 from tempfile import TemporaryDirectory
 from zipfile import ZipFile, ZIP_DEFLATED
 import os
+import time as ti
 import polars as pl
 
 
@@ -548,6 +549,7 @@ for sub in data_df.iter_rows():
     saveAsZIP(path, token, start_date, end_date, sub_name)
     
 
+ti.sleep(15)
 
 # Nova131_token = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyM1JXVEQiLCJzdWIiOiJCVDRHUEIiLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJyc29jIHJzZXQgcm94eSBycHJvIHJudXQgcnNsZSByYWN0IHJyZXMgcmxvYyByd2VpIHJociBydGVtIiwiZXhwIjoxNzQ1MjQyMjYyLCJpYXQiOjE3MTM3MDYyNjZ9.wmP3VhhaoxoGxUEqALN284VW--DQpR7Tum37CdHLX7I'
 # HotMobile_token = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIyM1JaWk4iLCJzdWIiOiJCVEJOTE4iLCJpc3MiOiJGaXRiaXQiLCJ0eXAiOiJhY2Nlc3NfdG9rZW4iLCJzY29wZXMiOiJyc29jIHJzZXQgcm94eSBybnV0IHJwcm8gcnNsZSByYWN0IHJsb2MgcnJlcyByd2VpIHJociBydGVtIiwiZXhwIjoxNzQzNjg4NTczLCJpYXQiOjE3MTIxNTI1NzN9.yoQxXR2wN1syDQVIjYXIJIPVKG8nrELMfsV3vVWt7P4'
