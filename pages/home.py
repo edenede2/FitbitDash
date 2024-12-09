@@ -54,17 +54,26 @@ dash.register_page(__name__,  path='/')
 
 
 layout = html.Div([
-    html.H1('Home Page'),
-    html.P('Welcome to the FitBit App!'),
-    html.P('You using the FitBit App 1.0 version'),
-    html.Hr(),
-    html.P('This app guided by the FitBit tutorial website'),
-    html.P('You can find the tutorial here:'),
-    html.A('FitBit Tutorial', href='https://fitbitutorial.streamlit.app/'),
-    html.Hr(),
-    html.P('If you need the dashboard, you can find it here:'),
-    html.A('FitBit Dashboard', href='https://fitbitestapipy.streamlit.app/'),
-    html.Hr(),
-    html.P('If you need the FitBit Alerts System, you can find it here:'),
-    html.A('FitBit Alerts System', href='https://fitbitalartsservice.streamlit.app/'),
+    html.H1('Welcome to the FitBit App!'),
+    dbc.Container([
+        dbc.Row([
+            html.P('You using the FitBit App 1.0 version'),
+            html.P('Release date: 2024-12-09'),
+        ]),
+        dbc.Row([
+            html.P('This app guided by the FitBit tutorial website'),
+            html.P('You can find the tutorial here:'),
+            html.A('FitBit Tutorial', href='https://fitbitutorial.streamlit.app/'),
+        ]),
+        dbc.Row([
+            html.P('This app is a part of the FitBit App ecosystem of the Roee Admon\'s Lab'),
+            html.P('You can find the other apps here:'),
+            html.Hr(),
+            html.P('If you need the dashboard, you can find it here:'),
+            html.A('FitBit Dashboard', href='https://fitbitestapipy.streamlit.app/'),
+            html.Hr(),
+            html.P('If you need the FitBit Alerts System, you can find it here:'),
+            html.A('FitBit Alerts System', href='https://fitbitalartsservice.streamlit.app/'),
+        ]),
+    ]),
 ])
