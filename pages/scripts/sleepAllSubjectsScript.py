@@ -592,5 +592,16 @@ if __name__ == '__main__':
         now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         user_name = 'Unknown'
 
+    log_path = f'./logs/sleepAllSubjectsScript_{now}.log'
+    if not os.path.exists('./logs'):
+        os.makedirs('./logs')
+    logging.basicConfig(filename=log_path, level=logging.INFO)
+    logging.info(f'param: {param}, now: {now}, user_name: {user_name}')
+
+
     print(param, now, user_name)
     main(param, now, user_name)
+    logging.info('Script finished successfully')
+
+    
+    time.sleep(15)

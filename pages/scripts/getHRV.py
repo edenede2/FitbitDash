@@ -772,4 +772,4 @@ if __name__ == '__main__':
         user_name = 'Unknown'
 
     main(param, now, user_name)
-    time.sleep(10)
+    time.sleep(15)

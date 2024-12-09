@@ -489,3 +489,4 @@ if __name__ == '__main__':
         max_hr_threashold = 180
 
     main(param, now, user_name, con_threashold, min_hr_threashold, max_hr_threashold)
+    time.sleep(15)

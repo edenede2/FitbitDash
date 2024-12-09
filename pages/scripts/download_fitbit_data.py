@@ -682,6 +682,8 @@ if __name__ == '__main__':
             username = 'PsyLab-6028'
 
             main(project, username, now)
+    
+    ti.sleep(15)
 
         
         

@@ -1106,3 +1106,4 @@ if __name__ == '__main__':
     print(f'signal: {signal}')
 
     main(param, now, user_name, include_not_il, include_dst, window_size, increment_size, downsample, missing_data_threshold, intepolation, signal)
+    time.sleep(15)

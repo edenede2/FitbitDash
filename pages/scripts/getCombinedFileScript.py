@@ -28,7 +28,7 @@ import logging
 import pickle
 import shutil
 import json
-import time
+import time 
 import sys
 import os
 import re
@@ -1312,3 +1312,4 @@ if __name__ == '__main__':
     print(f'Generating the files for {param}...')
 
     main(param, now, user_name)
+    time.sleep(15)
