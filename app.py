@@ -10,7 +10,7 @@ flask_app = Flask(__name__)
 
 app = dash.Dash(__name__, server=flask_app, external_stylesheets=[dbc.themes.CERULEAN], use_pages=True)
 
-# window = webview.create_window('FitBit App', flask_app, width=800, height=600, resizable=True, fullscreen=False)
+window = webview.create_window('FitBit App', flask_app, width=800, height=600, resizable=True, fullscreen=False)
 
 sidebar = dbc.Nav(
     [
@@ -57,5 +57,5 @@ app.layout = dbc.Container([
 
 
 if __name__ == '__main__':
-    # webview.start()
-    app.run(host='127.0.0.1', port=8080, debug=True)
+    webview.start()
+    # app.run(host='127.0.0.1', port=8080, debug=True)
