@@ -159,12 +159,12 @@ def main(project, now, username):
                     })
             )
 
-            if experiment_dates['NotInIsrael'].values[0]:
+            if experiment_dates['NotInIsrael'].values[0] and not pd.isna(experiment_dates['NotInIsraelStartDate'].values[0]):
                 range_of_experiment_dates_before = pd.date_range(experiment_dates['ExperimentStartDate'].values[0], pd.to_datetime(experiment_dates['NotInIsraelStartDate'].values[0]) - pd.Timedelta(days=1), freq='D')
                 range_of_experiment_dates_after = pd.date_range(pd.to_datetime(experiment_dates['NotInIsraelEndDate'].values[0]) + pd.Timedelta(days=1), experiment_dates['ExperimentEndDate'].values[0], freq='D')
                 range_mask = range_of_experiment_dates_before.append(range_of_experiment_dates_after)
 
-            if experiment_dates['NotInIsrael_1'].values[0]:
+            if experiment_dates['NotInIsrael_1'].values[0] and not pd.isna(experiment_dates['NotInIsraelStartDate_1'].values[0]):
                 range_of_experiment_dates_before = pd.date_range(experiment_dates['ExperimentStartDate'].values[0], pd.to_datetime(experiment_dates['NotInIsraelStartDate_1'].values[0]) - pd.Timedelta(days=1), freq='D')
                 range_of_experiment_dates_after = pd.date_range(pd.to_datetime(experiment_dates['NotInIsraelEndDate_1'].values[0]) + pd.Timedelta(days=1), experiment_dates['ExperimentEndDate'].values[0], freq='D')
                 range_mask = range_of_experiment_dates_before.append(range_of_experiment_dates_after)
@@ -269,19 +269,35 @@ def main(project, now, username):
             
             
 
-            minutes_of_sleep = (
-                pl.DataFrame(subject_sleep_df)
-                .select(
-                    BedStartTime = pl.col('BedStartTime').dt.cast_time_unit('us'),
-                    BedEndTime = pl.col('BedEndTime').dt.cast_time_unit('us')
-                ).select(
-                    sleep_time = pl.datetime_ranges('BedStartTime', 'BedEndTime', interval='1m')
-                ).explode('sleep_time')
-                .with_columns(
-                    sleep_time = pl.col('sleep_time').dt.round('1m')
+            try:
+                minutes_of_sleep = (
+                    pl.DataFrame(subject_sleep_df)
+                    .select(
+                        BedStartTime = pl.col('BedStartTime').dt.cast_time_unit('us'),
+                        BedEndTime = pl.col('BedEndTime').dt.cast_time_unit('us')
+                    ).select(
+                        sleep_time = pl.datetime_ranges('BedStartTime', 'BedEndTime', interval='1m')
+                    ).explode('sleep_time')
+                    .with_columns(
+                        sleep_time = pl.col('sleep_time').dt.round('1m')
+                    )
                 )
-            )
-
+            except:
+                minutes_of_sleep = (
+                    pl.DataFrame(subject_sleep_df)
+                    .with_columns(
+                        BedStartTime = pl.col('BedStartTime').str.to_date('%Y-%m-%d %H:%M:%S', strict=False),
+                        BedEndTime = pl.col('BedEndTime').str.to_date('%Y-%m-%d %H:%M:%S', strict=False)
+                    ).select(
+                        BedStartTime = pl.col('BedStartTime').dt.cast_time_unit('us'),
+                        BedEndTime = pl.col('BedEndTime').dt.cast_time_unit('us')
+                    ).select(
+                        sleep_time = pl.datetime_ranges('BedStartTime', 'BedEndTime', interval='1m')
+                    ).explode('sleep_time')
+                    .with_columns(
+                        sleep_time = pl.col('sleep_time').dt.round('1m')
+                    )
+                )
             sleep_levels_df = (
                 minutes_of_sleep
                 .join(
@@ -302,14 +318,23 @@ def main(project, now, username):
             )
 
             
-
-            subject_sleep_df = (
-                subject_sleep_df
-                .filter(
-                    pl.col('DateOfSleepEvening').is_in(experiment_date_range['FullDate'])
+            try:
+                subject_sleep_df = (
+                    subject_sleep_df
+                    .filter(
+                        pl.col('DateOfSleepEvening').is_in(experiment_date_range['FullDate'])
+                    )
                 )
-            )
-
+            except:
+                subject_sleep_df = (
+                    subject_sleep_df
+                    .with_columns(
+                        pl.col('DateOfSleepEvening').str.to_date('%Y-%m-%d', strict=False)
+                    )
+                    .filter(
+                        pl.col('DateOfSleepEvening').is_in(experiment_date_range['FullDate'])
+                    )
+                )
             # for date in subject_sleep_df['DateOfSleepEvening']:
             #     if date not in range_of_experiment_dates:
             #         # drop the row if the date is not in the range of experiment dates
@@ -1244,12 +1269,14 @@ def main(project, now, username):
             by_activity(exclude_weekends=False)
             by_activity(exclude_weekends=True)
 
-
+            logging.info('File generation completed')
 
 
             
     except Exception as e:
         print(e)
+        logging.error(f'Error: {e}')
+        logging.info('File generation failed')
         time.sleep(10)
 
 
@@ -1306,12 +1333,14 @@ if __name__ == '__main__':
         user_name = sys.argv[3]
 
     except IndexError:
-        param = 'lab_present'
+        param = 'Lab_Session'
         now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         user_name = 'Unknown'
 
 
     print(f'Generating the files for {param}...')
+#     logging.basicConfig(filename=f'logs/preprocessing_{now}.log', level=logging.INFO)
 
+    logging.basicConfig(filename=f'logs/getCombinedFileScript_{now}.log', level=logging.INFO)
     main(param, now, user_name)
     time.sleep(15)

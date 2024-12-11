@@ -63,6 +63,8 @@ for key in Pconfigs.keys():
 layout = html.Div([
         dcc.Store(id='file-data-store-Final', storage_type='memory'),
         dcc.Store(id='output-file-path-Final', storage_type='memory'),
+        dcc.Store(id='start-time-Final', storage_type='memory'),
+        dcc.Interval(id='interval-Final', interval=3000, n_intervals=0, disabled=True),
 
         dbc.Container([
             dbc.Row([
@@ -272,6 +274,11 @@ def load_raw_data(n_clicks, project):
         'index': 1
     }, n_clicks=0, color='success')
 
+    run_selected_button = dbc.Button('Run selected subjects', id={
+        'type': 'run-selected-Final-button',
+        'index': 1
+    }, n_clicks=0, color='success')
+
     show_button = dbc.Button('Show available data', id={
         'type': 'show-available-Final-data-button',
         'index': 1
@@ -282,6 +289,7 @@ def load_raw_data(n_clicks, project):
         html.H4('Raw data:'),
         grid,
         run_button,
+        run_selected_button,
         show_button
     ]
 
@@ -470,6 +478,8 @@ def show_available_data(n_clicks, selected_rows, project):
     Output('confirm-dialog-Final', 'displayed'),
     Output('error-gen-dialog-Final', 'displayed'),
     Output('error-gen-dialog-Final', 'message'),
+    Output('interval-Final', 'disabled'),
+    Output('start-time-Final', 'data'),
     Input({'type': 'run-Final-button', 'index': ALL}, 'n_clicks'),
     State({'type': 'raw-Final-data-table', 'index': ALL}, 'rowData'),
     State('usenname-Final', 'value'),
@@ -480,10 +490,10 @@ def run_preprocessing(n_clicks, raw_data, username, project):
         raise PreventUpdate
     
     if n_clicks == []:
-        return False, False, ''
+        return False, False, '', True, ''
     
     if n_clicks[0] == 0:
-        return False, False, ''
+        return False, False, '', True, ''
     
     print(f'n_clicks: {n_clicks}')
 
@@ -491,7 +501,7 @@ def run_preprocessing(n_clicks, raw_data, username, project):
     print(f'Raw data: {df}')
 
     if not df['run'].any():
-        return False, True, 'No subjects selected to run Final'
+        return False, True, 'No subjects selected to run Final', True, ''
     
     df = (
         df
@@ -502,7 +512,7 @@ def run_preprocessing(n_clicks, raw_data, username, project):
     df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_folders_Final.parquet')
 
     if username == '':
-        return False, True, 'Please enter your name before running the Final generation script'
+        return False, True, 'Please enter your name before running the Final generation script', True, ''
         
 
     try:
@@ -524,13 +534,81 @@ def run_preprocessing(n_clicks, raw_data, username, project):
                                    stderr=subprocess.PIPE,
                                    shell=True)
         
-        return True, False, ''
+        return False, True, False, '', False, now
     except Exception as e:
         print(e)
-        return False, True, str(e)
+        return False, True, str(e), True, ''
 
 
+        
+@callback(
+    Output('confirm-dialog-Final', 'displayed', allow_duplicate=True),
+    Output('error-gen-dialog-Final', 'displayed', allow_duplicate=True),
+    Output('error-gen-dialog-Final', 'message', allow_duplicate=True),
+    Output('interval-Final', 'disabled', allow_duplicate=True),
+    Output('start-time-Final', 'data', allow_duplicate=True),
+    Input({'type': 'run-selected-Final-button', 'index': ALL}, 'n_clicks'),
+    State({'type': 'raw-Final-data-table', 'index': ALL}, 'selectedRows'),
+    State('usenname-Final', 'value'),
+    State('project-selection-dropdown-FitBit-Final', 'value'),
+    prevent_initial_call=True
+)
+def run_preprocessing(n_clicks, raw_data, username, project):
+    if n_clicks == 0:
+        raise PreventUpdate
     
+    if n_clicks == []:
+        return False, False, '', True, ''
+    
+    if n_clicks[0] == 0:
+        return False, False, '', True, ''
+    
+    print(f'n_clicks: {n_clicks}')
+
+    df = pl.DataFrame(raw_data[0])
+    print(f'Raw data: {df}')
+
+    if not df['run'].any():
+        return False, True, 'No subjects selected to run Final', True, ''
+    
+    df = (
+        df
+        .filter(
+            pl.col('sleep_daily_summary') | pl.col('full_week_heart_rate_of_sleep_summary_means') | pl.col('HRV_tempe_resp_summary') | pl.col('mindfulness_summary')
+        )
+    )
+    df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_folders_Final.parquet')
+
+    if username == '':
+        return False, True, 'Please enter your name before running the Final generation script', True, ''
+        
+
+    try:
+
+        param = project
+        param2 = now
+        param3 = username
+        script_path = r'.\pages\scripts\getFinal.py'
+
+        if platform.system() == 'Windows':
+            command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'
+            print(command)
+        else:
+            command = f'python3 "{script_path}" {param} {param2} {param3}'
+            print(command)
+
+        process = subprocess.Popen(command, 
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   shell=True)
+        
+        return False, False, '', False, now
+    except Exception as e:
+        print(e)
+        return False, True, str(e), True, ''
+
+
+
                 
 
      
@@ -859,3 +937,47 @@ def update_column_distribution(n_clicks, selected_id, selected_column, selected_
     fig = go.Figure([go.Bar(x=counts.index.astype(str), y=counts.values, name='Count')])
     fig.update_layout(title=f"Value Counts of {selected_column}")
     return html.Div(dcc.Graph(figure=fig)), [table]
+
+
+
+                
+@callback(
+    Output('interval-Final', 'disabled', allow_duplicate=True),
+    Output('confirm-dialog-Final', 'displayed', allow_duplicate=True),
+    Output('confirm-dialog-Final', 'message', allow_duplicate=True),
+    Input('interval-Final', 'n_intervals'),
+    State('start-time-Final', 'data'),
+    prevent_initial_call=True   
+)
+def check_file_generation(n_intervals, start_time):
+    if n_intervals == 0:
+        raise PreventUpdate
+    
+    print(f'Checking file generation: {n_intervals}')
+    if n_intervals > 0:
+        print(f'Checking file generation: {n_intervals}')
+        # C:\Users\PsyLab-6028\Desktop\FitbitDash\logs\sleepAllSubjectsScript_2024-12-11_18-35-35.log
+        log_path = Path(rf'.\logs\Final_{start_time}.log')
+        if os.path.exists(log_path):
+            print(f'Checking file generation: {n_intervals}')
+            with open(log_path, 'r') as f:
+                log = f.read()
+                print(f'lOG: {log}')
+            if 'File generation completed' in log:
+                with open(log_path, 'a') as f:
+                    f.write(log + '\n' + 'File generation confirmed')
+                return True, True, 'File generation completed'
+            elif 'File generation failed' in log:
+                with open(log_path, 'a') as f:
+                    f.write(log + '\n' + 'File generation failed')
+                    message = 'File generation failed' + '\n' + f'{log}'
+
+                return True, True, message
+            else:
+                return False, False, ''
+        else:
+            return False, False, ''
+        
+    return False, False, ''
+    
+    

@@ -114,6 +114,12 @@ layout = html.Div([
                         n_clicks=0,
                         color='success'
                     ),
+                    dbc.Button(
+                        'Generate Sleep All Subjects for Selected Subjects',
+                        id='Generate-selected-file-button',
+                        n_clicks=0,
+                        color='warning'
+                    ),
                     dcc.Loading(
                         [
                             dcc.ConfirmDialog(
@@ -235,7 +241,7 @@ def load_fitbit_data(n_clicks, project):
     rows = available_raw_data_folders.with_row_index().to_pandas().to_dict('records')
 
     columns_def = [
-        {'headerName': 'Index', 'field': 'index', 'sortable': True, 'filter': True},
+        {'headerName': 'Index', 'field': 'index', 'sortable': True, 'filter': True, 'checkboxSelection': True},
         {'headerName': 'Subject', 'field': 'Subject', 'sortable': True, 'filter': True},
         {'headerName': 'Sleep jsons', 'field': 'Sleep jsons', 'sortable': True, 'filter': True},
         {'headerName': 'Subject dates', 'field': 'Subject dates', 'sortable': True, 'filter': True},
@@ -336,28 +342,113 @@ def initialize_folders(n_clicks, selected_rows, project, username):
         # stdout, stderr = process.communicate()
         
 
-        return True, False, '', False, now
+        return False, False, '', False, now
     except Exception as e:
         return False, True, str(e), True, ''
     
 
 
 @callback(
-    Output('interval-Sleep-All-Subjects', 'disabled'),
-    Output('confirm-dialog-Sleep-All-Subjects', 'displayed'),
-    Output('confirm-dialog-Sleep-All-Subjects', 'message'),
+    Output('confirm-dialog-Sleep-All-Subjects', 'displayed', allow_duplicate=True),
+    Output('error-gen-dialog', 'displayed', allow_duplicate=True),
+    Output('error-gen-dialog', 'message', allow_duplicate=True),
+    Output('interval-Sleep-All-Subjects', 'disabled', allow_duplicate=True),
+    Output('start-time-Sleep-All-Subjects', 'data', allow_duplicate=True),
+    Input('Generate-selected-file-button', 'n_clicks'),
+    State({'type': 'sleep-all-subjects-table', 'index': ALL}, 'selectedRows'),
+    State('project-selection-dropdown-FitBit-Sleep-All-Subjects', 'value'),
+    State('usenname-Sleep-All-Subjects', 'value'),
+    prevent_initial_call=True
+)
+def initialize_folderss(n_clicks, selected_rows, project, username):
+    if n_clicks == 0:
+        raise PreventUpdate
+
+    paths_json = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
+    project_path = Path(paths_json[project])
+
+    DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT = ut.declare_project_global_variables(project_path)
+
+    PROJECT_CONFIG = json.load(open(r'.\pages\Pconfigs\paths data.json', 'r'))
+
+    if not selected_rows:
+        raise PreventUpdate
+
+    print(selected_rows)
+
+    selected_rows_df = (
+        pl.DataFrame(selected_rows[0])
+        .filter(
+            pl.col('run') == True,
+            pl.col('Sleep jsons') > 0
+        )
+        .drop('run')
+    )
+            
+
+    selected_rows_df = pl.DataFrame({
+        'Id': selected_rows_df['Subject'],
+        'Date': [datetime.datetime.now().strftime('%Y-%m-%d') for row in selected_rows_df['Subject']]
+    })
+    
+    selected_rows_df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_sleep_all_subjects.parquet') 
+
+    
+    if username == '':
+        return False, True, 'Please enter your name', True, ''
+
+
+    try:
+
+        param = project
+        param2 = now
+        param3 = username
+        # Define the command to run the script
+        script_path = r'.\pages\scripts\sleepAllSubjectsScript.py'   
+            
+        if platform.system() == "Windows":
+            command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'  # Adjust this for non-Windows systems if needed
+        else:
+            command = f'python3 "{script_path}" {param} {param2} {param3}'  # Adjust this for non-Windows systems if needed
+
+        # Run the script in a new CMD window
+        process = subprocess.Popen(command,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   shell=True)
+        
+        # Optionally wait for the process to complete and capture output
+        # stdout, stderr = process.communicate()
+        
+
+        return False, False, '', False, now
+    except Exception as e:
+        return False, True, str(e), True, ''
+    
+
+
+@callback(
+    Output('interval-Sleep-All-Subjects', 'disabled', allow_duplicate=True),
+    Output('confirm-dialog-Sleep-All-Subjects', 'displayed', allow_duplicate=True),
+    Output('confirm-dialog-Sleep-All-Subjects', 'message', allow_duplicate=True),
     Input('interval-Sleep-All-Subjects', 'n_intervals'),
-    State('start-time-Sleep-All-Subjects', 'data')
+    State('start-time-Sleep-All-Subjects', 'data'),
+    prevent_initial_call=True   
 )
 def check_file_generation(n_intervals, start_time):
     if n_intervals == 0:
         raise PreventUpdate
     
+    print(f'Checking file generation: {n_intervals}')
     if n_intervals > 0:
-        log_path = Path(rf'.\pages\logs\sleepAllSubjectsScript_{start_time}.log')
+        print(f'Checking file generation: {n_intervals}')
+        # C:\Users\PsyLab-6028\Desktop\FitbitDash\logs\sleepAllSubjectsScript_2024-12-11_18-35-35.log
+        log_path = Path(rf'.\logs\sleepAllSubjectsScript_{start_time}.log')
         if os.path.exists(log_path):
+            print(f'Checking file generation: {n_intervals}')
             with open(log_path, 'r') as f:
                 log = f.read()
+                print(f'lOG: {log}')
             if 'File generation completed' in log:
                 with open(log_path, 'a') as f:
                     f.write(log + '\n' + 'File generation confirmed')

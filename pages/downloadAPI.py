@@ -246,3 +246,6 @@ def generate_file(n_clicks, selected_rows, username, project):
     
     except Exception as e:
         return False, True, str(e)
+
+
+

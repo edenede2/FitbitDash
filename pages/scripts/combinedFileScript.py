@@ -119,10 +119,19 @@ def main(project, now, username):
             time.sleep(10)
             quit()
 
-
-        sleep_all_subjects = pl.read_csv(sleep_all_subjects_path, try_parse_dates=True)
-        steps_all_subjects = pl.read_csv(steps_all_subjects_path, try_parse_dates=True)
-
+        try:
+            sleep_all_subjects = (
+                pl.read_csv(sleep_all_subjects_path, try_parse_dates=True)
+                .with_columns(
+                    pl.col('ExperimentDates').str.to_date('%Y-%m-%d', strict=False)
+                )
+                )
+            steps_all_subjects = pl.read_csv(steps_all_subjects_path, try_parse_dates=True)
+        except:
+            sleep_all_subjects = (
+                pl.read_csv(sleep_all_subjects_path, try_parse_dates=True)
+            )
+            steps_all_subjects = pl.read_csv(steps_all_subjects_path, try_parse_dates=True)
         missing_values_df = pl.DataFrame()
 
 
@@ -506,7 +515,7 @@ if __name__ == '__main__':
         print(param)
         print(f'Starting initiate with system parameters')
     except IndexError:
-        param = 'FIBRO_TESTS'
+        param = 'Lab_Session'
         now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         user_name = 'Unknown'
 

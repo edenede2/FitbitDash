@@ -546,6 +546,7 @@ try:
 
         exeHistory = pl.concat([exeHistory, exeHistoryUpdate], how='diagonal_relaxed')
 
+        logging.info(f'File generation completed')
 
 
 
@@ -1052,7 +1053,10 @@ try:
         else:
             return new_df
     
+
 except Exception as e:
+    logging.info('File generation failed')
+
     print(f'Error: {e}')
     time.sleep(10)
 
@@ -1105,5 +1109,7 @@ if __name__ == '__main__':
     print(f'intepolation: {intepolation}')
     print(f'signal: {signal}')
 
+    logging.basicConfig(filename=f'logs/getRhythm_{now}.log', level=logging.INFO)
+    logging.info('Starting getRhythm.py')
     main(param, now, user_name, include_not_il, include_dst, window_size, increment_size, downsample, missing_data_threshold, intepolation, signal)
     time.sleep(15)

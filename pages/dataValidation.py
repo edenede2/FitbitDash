@@ -62,6 +62,8 @@ for key in Pconfigs.keys():
 
 
 layout = html.Div([
+    dcc.Store(id='start-time-Data-Validation', data=now),
+    dcc.Interval(id='interval-Data-Validation', interval=1000, n_intervals=0, disabled=True),
         dbc.Container([
             dbc.Row([
                 dbc.Col([
@@ -323,6 +325,8 @@ def load_fitbit_data(n_clicks, project):
     Output('confirm-dialog', 'displayed'),
     Output('error-initialize-dialog', 'displayed'),
     Output('error-initialize-dialog', 'message'),
+    Output('interval-Data-Validation', 'disabled'),
+    Output('start-time-Data-Validation', 'data'),
     Input('initialize-folder-button', 'n_clicks'),
     State({'type': 'raw-data-subjects-table', 'index': ALL}, 'selectedRows'),
     State('project-selection-dropdown-FitBit-Data-Validation', 'value'),
@@ -350,7 +354,7 @@ def initialize_folders(n_clicks, selected_rows, project, username):
     selected_rows_df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_folders_init.parquet')
 
     if username == '':
-        return False, True, 'Please enter your name'
+        return False, True, 'Please enter your name', True, ''
     
     
 
@@ -379,9 +383,9 @@ def initialize_folders(n_clicks, selected_rows, project, username):
         # stdout, stderr = process.communicate()
 
 
-        return True, False, ''
+        return False, False, '', False, now
     except Exception as e:
-        return False, True, str(e)
+        return False, True, str(e), True, ''
     
 
 
@@ -421,7 +425,7 @@ def initialize_folders(n_clicks, rows, project, username):
     selected_rows_df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_folders_init.parquet')
 
     if username == '':
-        return False, True, 'Please enter your name'
+        return False, True, 'Please enter your name', True, ''
     
     
 
@@ -450,7 +454,7 @@ def initialize_folders(n_clicks, rows, project, username):
         # stdout, stderr = process.communicate()
 
 
-        return True, False, ''
+        return False, False, '', False, now
     except Exception as e:
         return False, True, str(e)
     
@@ -459,3 +463,45 @@ def initialize_folders(n_clicks, rows, project, username):
 
                     
 
+
+                
+@callback(
+    Output('interval-Data-Validation', 'disabled', allow_duplicate=True),
+    Output('confirm-dialog', 'displayed', allow_duplicate=True),
+    Output('confirm-dialog', 'message', allow_duplicate=True),
+    Input('interval-Data-Validation', 'n_intervals'),
+    State('start-time-Data-Validation', 'data'),
+    prevent_initial_call=True   
+)
+def check_file_generation(n_intervals, start_time):
+    if n_intervals == 0:
+        raise PreventUpdate
+    
+    print(f'Checking file generation: {n_intervals}')
+    if n_intervals > 0:
+        print(f'Checking file generation: {n_intervals}')
+        # C:\Users\PsyLab-6028\Desktop\FitbitDash\logs\sleepAllSubjectsScript_2024-12-11_18-35-35.log
+        log_path = Path(rf'.\logs\Data-Validation_{start_time}.log')
+        if os.path.exists(log_path):
+            print(f'Checking file generation: {n_intervals}')
+            with open(log_path, 'r') as f:
+                log = f.read()
+                print(f'lOG: {log}')
+            if 'File generation completed' in log:
+                with open(log_path, 'a') as f:
+                    f.write(log + '\n' + 'File generation confirmed')
+                return True, True, 'File generation completed'
+            elif 'File generation failed' in log:
+                with open(log_path, 'a') as f:
+                    f.write(log + '\n' + 'File generation failed')
+                    message = 'File generation failed' + '\n' + f'{log}'
+
+                return True, True, message
+            else:
+                return False, False, ''
+        else:
+            return False, False, ''
+        
+    return False, False, ''
+    
+    

@@ -65,6 +65,8 @@ for key in Pconfigs.keys():
 layout = html.Div([
         dcc.Store(id='file-data-store-HRV', storage_type='memory'),
         dcc.Store(id='output-file-path-HRV', storage_type='memory'),
+        dcc.Store(id='start-time-HRV', storage_type='memory'),
+        dcc.Interval(id='interval-HRV', interval=3000, n_intervals=0, disabled=True),
 
         dbc.Container([
             dbc.Row([
@@ -277,12 +279,17 @@ def load_raw_data(n_clicks, project):
         dashGridOptions={
             'pagination': True,
             'paginationPageSize': 10,
-            'rowSelection': 'single',
+            'rowSelection': 'multiple',
         }
     )
 
     run_button = dbc.Button('Run HRV Proccesing', id={
         'type': 'run-HRV-button',
+        'index': 1
+    }, n_clicks=0, color='success')
+
+    run_selected_button = dbc.Button('Run selected subjects', id={
+        'type': 'run-selected-HRV-button',
         'index': 1
     }, n_clicks=0, color='success')
 
@@ -296,6 +303,7 @@ def load_raw_data(n_clicks, project):
         html.H4('Raw data:'),
         grid,
         run_button,
+        run_selected_button,
         show_button
     ]
 
@@ -531,6 +539,8 @@ def show_available_data(n_clicks, selected_rows, project):
     Output('confirm-dialog-HRV', 'displayed'),
     Output('error-gen-dialog-HRV', 'displayed'),
     Output('error-gen-dialog-HRV', 'message'),
+    Output('start-time-HRV', 'data'),
+    Output('interval-HRV', 'disabled'),
     Input({'type': 'run-HRV-button', 'index': ALL}, 'n_clicks'),
     State({'type': 'raw-HRV-data-table', 'index': ALL}, 'rowData'),
     State('usenname-HRV', 'value'),
@@ -541,10 +551,10 @@ def run_preprocessing(n_clicks, raw_data, username, project):
         raise PreventUpdate
     
     if n_clicks == []:
-        return False, False, ''
+        return False, False, '', '', True
     
     if n_clicks[0] == 0:
-        return False, False, ''
+        return False, False, '', '', True
     
     print(f'n_clicks: {n_clicks}')
 
@@ -552,7 +562,7 @@ def run_preprocessing(n_clicks, raw_data, username, project):
     print(f'Raw data: {df}')
 
     if not df['run'].any():
-        return False, True, 'No subjects selected to run HRV'
+        return False, True, 'No subjects selected to run HRV', '', True
     
     df = (
         df
@@ -567,7 +577,7 @@ def run_preprocessing(n_clicks, raw_data, username, project):
     df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_folders_HRV.parquet')
 
     if username == '':
-        return False, True, 'Please enter your name before running the HRV processing script'
+        return False, True, 'Please enter your name before running the HRV processing script', '', True
         
 
     try:
@@ -589,14 +599,87 @@ def run_preprocessing(n_clicks, raw_data, username, project):
                                    stderr=subprocess.PIPE,
                                    shell=True)
         
-        return True, False, ''
+        return False, False, '', now, False
     except Exception as e:
         print(e)
-        return False, True, str(e)
+        return False, True, str(e), '', True
 
 
     
 
+        
+@callback(
+    Output('confirm-dialog-HRV', 'displayed', allow_duplicate=True),
+    Output('error-gen-dialog-HRV', 'displayed', allow_duplicate=True),
+    Output('error-gen-dialog-HRV', 'message', allow_duplicate=True),
+    Output('start-time-HRV', 'data', allow_duplicate=True),
+    Output('interval-HRV', 'disabled', allow_duplicate=True),
+    Input({'type': 'run-selected-HRV-button', 'index': ALL}, 'n_clicks'),
+    State({'type': 'raw-HRV-data-table', 'index': ALL}, 'selectedRows'),
+    State('usenname-HRV', 'value'),
+    State('project-selection-dropdown-FitBit-HRV', 'value'),
+    prevent_initial_call=True
+)
+def run_preprocessing(n_clicks, raw_data, username, project):
+    if n_clicks == 0:
+        raise PreventUpdate
+    
+    if n_clicks == []:
+        return False, False, '', '', True
+    
+    if n_clicks[0] == 0:
+        return False, False, '', '', True
+    
+    print(f'n_clicks: {n_clicks}')
+
+    df = pl.DataFrame(raw_data[0])
+    print(f'Raw data: {df}')
+
+    if not df['run'].any():
+        return False, True, 'No subjects selected to run HRV', '', True
+    
+    df = (
+        df
+        .filter(
+            pl.col('sleep_data_files') > 0,
+            pl.col('computed_temperature_files') > 0,
+            pl.col('daily_respiratory_rate_summary_files') > 0,
+            pl.col('heart_rate_variability_details_files') > 0,
+            pl.col('device_temperature_files') > 0
+        )
+    )
+    df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_folders_HRV.parquet')
+
+    if username == '':
+        return False, True, 'Please enter your name before running the HRV processing script', '', True
+        
+
+    try:
+
+        param = project
+        param2 = now
+        param3 = username
+        script_path = r'.\pages\scripts\getHRV.py'
+            
+        if platform.system() == 'Windows':
+            command = f'start cmd /c python "{script_path}" {param} {param2} {param3}'
+            print(command)
+        else:
+            command = f'python3 "{script_path}" {param} {param2} {param3}'
+            print(command)
+
+        process = subprocess.Popen(command, 
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   shell=True)
+        
+        return False, False, '', now, False
+    except Exception as e:
+        print(e)
+        return False, True, str(e), '', True
+
+
+    
                 
 
 @callback(
@@ -924,4 +1007,47 @@ def update_column_distribution(n_clicks, selected_id, selected_column, selected_
     fig = go.Figure([go.Bar(x=counts.index.astype(str), y=counts.values, name='Count')])
     fig.update_layout(title=f"Value Counts of {selected_column}")
     return html.Div(dcc.Graph(figure=fig)), [table]
+
+
+
+                
+@callback(
+    Output('interval-HRV', 'disabled', allow_duplicate=True),
+    Output('confirm-dialog-HRV', 'displayed', allow_duplicate=True),
+    Output('confirm-dialog-HRV', 'message', allow_duplicate=True),
+    Input('interval-HRV', 'n_intervals'),
+    State('start-time-HRV', 'data'),
+    prevent_initial_call=True   
+)
+def check_file_generation(n_intervals, start_time):
+    if n_intervals == 0:
+        raise PreventUpdate
+    
+    print(f'Checking file generation: {n_intervals}')
+    if n_intervals > 0:
+        print(f'Checking file generation: {n_intervals}')
+        # C:\Users\PsyLab-6028\Desktop\FitbitDash\logs\sleepAllSubjectsScript_2024-12-11_18-35-35.log
+        log_path = Path(rf'.\logs\getHRV_{start_time}.log')
+        if os.path.exists(log_path):
+            print(f'Checking file generation: {n_intervals}')
+            with open(log_path, 'r') as f:
+                log = f.read()
+                print(f'lOG: {log}')
+            if 'File generation completed' in log:
+                with open(log_path, 'a') as f:
+                    f.write(log + '\n' + 'File generation confirmed')
+                return True, True, 'File generation completed'
+            elif 'File generation failed' in log:
+                with open(log_path, 'a') as f:
+                    f.write(log + '\n' + 'File generation failed')
+                    message = 'File generation failed' + '\n' + f'{log}'
+
+                return True, True, message
+            else:
+                return False, False, ''
+        else:
+            return False, False, ''
         
+    return False, False, ''
+    
+    

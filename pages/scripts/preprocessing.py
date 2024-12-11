@@ -34,7 +34,7 @@ import os
 import re
 import tkinter as tk
 from tkinter import filedialog
-
+import logging
 import UTILS.utils as ut
 # from Test.Remove_sub.utils import get_latest_file_by_term as new_get_latest_file_by_term
 import warnings
@@ -443,8 +443,12 @@ def main(project, now, username, con_threashold, min_hr_threashold, max_hr_threa
             print('\n'.join(subjects_with_missing_steps_files))
             print('Change/Delete the missing files and run the script again')
 
+        logging.info('File generation completed')
+
     except Exception as e:
         print(e)
+        logging.info('File generation failed')
+        logging.exception("message")
         time.sleep(10)
 
 
@@ -487,6 +491,7 @@ if __name__ == '__main__':
         con_threashold = 1
         min_hr_threashold = 40
         max_hr_threashold = 180
-
+    logging.basicConfig(filename=f'logs/preprocessing_{now}.log', level=logging.INFO)
+    logging.info(f'preprocessing_{now}.log')
     main(param, now, user_name, con_threashold, min_hr_threashold, max_hr_threashold)
     time.sleep(15)

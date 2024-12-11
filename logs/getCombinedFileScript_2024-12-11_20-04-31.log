@@ -1,0 +1,6 @@
+ERROR:root:Error: `is_in` cannot check for Date values in String data
+INFO:root:File generation failed
+ERROR:root:Error: `is_in` cannot check for Date values in String data
+INFO:root:File generation failed
+
+File generation failed

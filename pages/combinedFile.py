@@ -64,6 +64,8 @@ for key in Pconfigs.keys():
 layout = html.Div([
         dcc.Store(id='file-data-store-Combined', storage_type='memory'),
         dcc.Store(id='output-file-path-Combined', storage_type='memory'),
+        dcc.Store(id='start-time-Combined', storage_type='memory'),
+        dcc.Interval(id='interval-Combined', interval=3000, n_intervals=0, disabled=True),
         dbc.Container([
             dbc.Row([
                 dbc.Col([
@@ -114,6 +116,9 @@ layout = html.Div([
                         n_clicks=0,
                         color='success'
                     )
+                ]),
+                dbc.Col([
+                    dbc.Button('Generate File for Selected Subjects', id='generate-file-selected-button-Combined', n_clicks=0, color='warning')
                 ]),
             ])
         ]),
@@ -230,7 +235,7 @@ def load_raw_data_subjects(n_clicks, project):
         )
 
         def_columns_basic = [
-            {'field': 'Subject', 'headerName': 'Subject', 'sortable': True, 'filter': True},
+            {'field': 'Subject', 'headerName': 'Subject', 'sortable': True, 'filter': True, 'checkboxSelection': True},
             {'field': 'Mean Missing HR %', 'headerName': 'Mean Missing HR %', 'sortable': True, 'filter': True},
             {'field': 'Mean Missing Sleep %', 'headerName': 'Mean Missing Sleep %', 'sortable': True, 'filter': True},
             {'field': 'refresh', 'headerName': 'refresh', 'sortable': True, 'filter': True, 'editable': True},
@@ -251,12 +256,14 @@ def load_raw_data_subjects(n_clicks, project):
                 'resizable': True,
                 'editable': True,
                 'sortable': True,
-                'filter': True
+                'filter': True,
+                'selectable': True
             },
             columnSize= 'autoSize',
             dashGridOptions={
                 'pagination': True,
                 'paginationPageSize': 10,
+                'rowSelection': 'multiple',
             }
         )
 
@@ -407,6 +414,8 @@ def refresh_selected(n_clicks, rows, project, user_name):
     Output('confirm-dialog-Combined', 'message', allow_duplicate=True),
     Output('error-gen-dialog-Combined', 'displayed', allow_duplicate=True),
     Output('error-gen-dialog-Combined', 'message', allow_duplicate=True),
+    Output('interval-Combined', 'disabled'),
+    Output('start-time-Combined', 'data'),
     Input('generate-file-button-Combined', 'n_clicks'),
     State({'type': 'basic-table', 'index': ALL}, 'rowData'),
     State('project-selection-dropdown-FitBit-Combined', 'value'),
@@ -444,7 +453,7 @@ def generate_file(n_clicks, rows, project, user_name):
     updated_basic_df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_gen_Combined.parquet')
 
     if user_name == '':
-        return False, '', True, 'Please enter your name before generating the file'
+        return False, '', True, 'Please enter your name before generating the file', True, ''
     
 
 
@@ -470,15 +479,93 @@ def generate_file(n_clicks, rows, project, user_name):
                                    stderr=subprocess.PIPE,
                                    shell=True)
         
-        return True, 'Generating File...', False, ''
+        return False, 'Generating File...', False, '', False, now
     except Exception as e:
-        return False, '', True, str(e)
+        return False, '', True, str(e), True, ''
     
 
     
 
                             
 
+@callback(
+    Output('confirm-dialog-Combined', 'displayed', allow_duplicate=True),
+    Output('confirm-dialog-Combined', 'message', allow_duplicate=True),
+    Output('error-gen-dialog-Combined', 'displayed', allow_duplicate=True),
+    Output('error-gen-dialog-Combined', 'message', allow_duplicate=True),
+    Output('interval-Combined', 'disabled', allow_duplicate=True),
+    Output('start-time-Combined', 'data', allow_duplicate=True),
+    Input('generate-file-selected-button-Combined', 'n_clicks'),
+    State({'type': 'basic-table', 'index': ALL}, 'selectedRows'),
+    State('project-selection-dropdown-FitBit-Combined', 'value'),
+    State('usenname-Combined', 'value'),
+    prevent_initial_call=True
+)
+def generate_file(n_clicks, rows, project, user_name):
+    if n_clicks == 0:
+        raise PreventUpdate
+    print(f'n_clicks generate: {n_clicks}')
+    if n_clicks == []:
+        raise PreventUpdate
+    
+    # if n_clicks[0] == 0:
+    #     raise PreventUpdate
+
+    print(f'n_clicks generate: {n_clicks}')
+
+    path = Pconfigs[project]
+
+    updated_basic_df = (
+        pl.DataFrame(rows[0])
+        .filter(
+            pl.col('run') == True
+        )
+        .drop('run')
+        .drop('refresh')
+        .drop('Last Updated')
+    )
+
+    include_weekends = True
+    exclude_weekends = False
+
+
+    updated_basic_df.write_parquet(rf'.\pages\sub_selection\{project}_sub_selection_gen_Combined.parquet')
+
+    if user_name == '':
+        return False, '', True, 'Please enter your name before generating the file', True, ''
+    
+
+
+    try:
+        print('Generating File')
+        param = project
+        param2 = now
+        param3 = user_name
+        param4 = include_weekends
+        param5 = exclude_weekends
+
+        script_path = r'.\pages\scripts\getCombinedFileScript.py'
+
+        if platform.system() == 'Windows':
+            command = f'start cmd /c python "{script_path}" {param} {param2} {param3} {param4} {param5}'
+            print(command)
+        else:
+            command = f'python3 "{script_path}" {param} {param2} {param3} {param4} {param5}'
+            print(command)
+
+        process = subprocess.Popen(command,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   shell=True)
+        
+        return False, 'Generating File...', False, '', False, now
+    except Exception as e:
+        return False, '', True, str(e), True, ''
+    
+
+    
+
+               
                 
 
 @callback(
@@ -806,3 +893,47 @@ def update_column_distribution(n_clicks, selected_id, selected_column, selected_
     fig = go.Figure([go.Bar(x=counts.index.astype(str), y=counts.values, name='Count')])
     fig.update_layout(title=f"Value Counts of {selected_column}")
     return html.Div(dcc.Graph(figure=fig)), [table]
+
+
+
+                
+@callback(
+    Output('interval-Combined', 'disabled', allow_duplicate=True),
+    Output('confirm-dialog-Combined', 'displayed', allow_duplicate=True),
+    Output('confirm-dialog-Combined', 'message', allow_duplicate=True),
+    Input('interval-Combined', 'n_intervals'),
+    State('start-time-Combined', 'data'),
+    prevent_initial_call=True   
+)
+def check_file_generation(n_intervals, start_time):
+    if n_intervals == 0:
+        raise PreventUpdate
+    
+    print(f'Checking file generation: {n_intervals}')
+    if n_intervals > 0:
+        print(f'Checking file generation: {n_intervals}')
+        # C:\Users\PsyLab-6028\Desktop\FitbitDash\logs\sleepAllSubjectsScript_2024-12-11_18-35-35.log
+        log_path = Path(rf'.\logs\getCombinedFileScript_{start_time}.log')
+        if os.path.exists(log_path):
+            print(f'Checking file generation: {n_intervals}')
+            with open(log_path, 'r') as f:
+                log = f.read()
+                print(f'lOG: {log}')
+            if 'File generation completed' in log:
+                with open(log_path, 'a') as f:
+                    f.write(log + '\n' + 'File generation confirmed')
+                return True, True, 'File generation completed'
+            elif 'File generation failed' in log:
+                with open(log_path, 'a') as f:
+                    f.write(log + '\n' + 'File generation failed')
+                    message = 'File generation failed' + '\n' + f'{log}'
+
+                return True, True, message
+            else:
+                return False, False, ''
+        else:
+            return False, False, ''
+        
+    return False, False, ''
+    
+    

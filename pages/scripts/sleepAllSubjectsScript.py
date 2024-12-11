@@ -76,8 +76,8 @@ def main(project, now, username):
                                         try_parse_dates=True)
         except:
             subjects_dates = pl.read_csv(SUBJECTS_DATES,
-                                        parse_dates=True,
-                                        encoding='utf-8')
+                                        try_parse_dates=True,
+                                        encoding='utf8')
 
         subjects_dates_df = subjects_dates.sort(by='Id').unique('Id').drop_nulls('Id')
 
@@ -590,7 +590,7 @@ if __name__ == '__main__':
         user_name = sys.argv[3]
 
     except IndexError:
-        param = 'NOVA_TESTS'
+        param = 'Lab_Session'
         now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         user_name = 'Unknown'
 
