@@ -167,9 +167,11 @@ def get_subject_dates_of_experiment(subject: str, METADATA_PATH) -> pd.DataFrame
     try:
         if os.path.exists(not_in_israel_path):
             not_in_israel_df = pd.read_excel(not_in_israel_path,
-                                             usecols=['Id', 'start_date', 'end_date', 'state','start_date_1','end_date_1','state_1'],
+                                            usecols=['Id', 'start_date', 'end_date', 'state','start_date_1','end_date_1','state_1'],
                                                 parse_dates=['start_date', 'end_date'],
                                                 date_parser=lambda x: pd.to_datetime(x, format='%Y-%m-%d'))
+
+
         else:
             not_in_israel_df = pd.DataFrame(columns=['Id', 'start_date', 'end_date', 'state','start_date_1','end_date_1','state_1'])
     except:

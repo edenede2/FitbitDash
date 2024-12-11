@@ -172,10 +172,12 @@ def main(project, now, username):
 
 
             
-
-            # Read the latest heart rate file
-            subject_heart_rate_df = pl.read_csv(latest_heart_rate_file_path, try_parse_dates=True)
-
+            try:
+                # Read the latest heart rate file
+                subject_heart_rate_df = pl.read_csv(latest_heart_rate_file_path, try_parse_dates=True)
+            except:
+                subject_heart_rate_df = pl.read_csv(latest_heart_rate_file_path, try_parse_dates=True, encoding='utf8')
+                
             subject_heart_rate_df = (
                 subject_heart_rate_df
                 .filter(

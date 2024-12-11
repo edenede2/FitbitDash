@@ -177,8 +177,8 @@ def load_fitbit_data(n_clicks, project):
                                     try_parse_dates=True)
     except:
         subjects_dates = pl.read_csv(SUBJECTS_DATES,
-                                    parse_dates=True,
-                                    encoding='utf-8')
+                                    try_parse_dates=True,
+                                    encoding='utf8')
 
     subjects_dates_df = subjects_dates.sort(by='Id').unique('Id').drop_nulls('Id')
 

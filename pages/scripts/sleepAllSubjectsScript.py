@@ -260,7 +260,7 @@ def main(project, now, username):
             # 'dense' = 'consecutive values'
             subject_sleep_df['DayOfExperiment'] = subject_sleep_df['ExperimentDates'].rank(method='dense')
             
-            if subject_experiment_metadata_row['NotInIsrael'].values[0]:
+            if subject_experiment_metadata_row['NotInIsrael'].values[0] and not pd.isna(subject_experiment_metadata_row['NotInIsraelStartDate'].values[0]) and not pd.isna(subject_experiment_metadata_row['NotInIsraelEndDate'].values[0]):
                 non_relevant_dates = pd.date_range(subject_experiment_metadata_row['NotInIsraelStartDate'].values[0], subject_experiment_metadata_row['NotInIsraelEndDate'].values[0])
                 # keep only the experiment dates and dayofexperiment data, put nan on the rest of the columns (in the non relevant dates range)
                 day_of_experiment = subject_sleep_df['DayOfExperiment'].copy()
@@ -276,7 +276,7 @@ def main(project, now, username):
                 subject_sleep_df['DayOfExperiment'] = day_of_experiment
                 subject_sleep_df['ExperimentDates'] = experiment_dates
             
-            if subject_experiment_metadata_row['NotInIsrael_1'].values[0]:
+            if subject_experiment_metadata_row['NotInIsrael_1'].values[0] and not pd.isna(subject_experiment_metadata_row['NotInIsraelStartDate_1'].values[0]) and not pd.isna(subject_experiment_metadata_row['NotInIsraelEndDate_1'].values[0]):
                 non_relevant_dates = pd.date_range(subject_experiment_metadata_row['NotInIsraelStartDate_1'].values[0], subject_experiment_metadata_row['NotInIsraelEndDate_1'].values[0])
                 # keep only the experiment dates and dayofexperiment data, put nan on the rest of the columns (in the non relevant dates range)
                 day_of_experiment = subject_sleep_df['DayOfExperiment'].copy()
