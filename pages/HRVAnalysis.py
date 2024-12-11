@@ -193,7 +193,9 @@ def load_raw_data(n_clicks, project):
         # print('No subjects found in processed data')
     raw_data_df = pl.DataFrame()
 
+    tqdm_subjects = tqdm(subjects, desc='Searching for data in the folder of subjects', position=0, leave=True)
     for subject in subjects:
+        tqdm_subjects.set_description(f'Searching for data in the folder of subject: {subject}')
         print(f'Searching for data in the folder of subject: {subject}')
 
         files_path = processed_data_path / subject / 'FITBIT' / 'Sleep'

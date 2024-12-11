@@ -177,7 +177,10 @@ def load_raw_data(n_clicks, project):
         # print('No subjects found in processed data')
     raw_data_df = pl.DataFrame()
 
-    for subject in subjects:
+    subjects_tqdm = tqdm(subjects, desc='Searching for data in the folder of subjects', position=0, leave=True)
+
+    for subject in subjects_tqdm:
+        subjects_tqdm.set_description(f'Searching for data in the folder of subject: {subject}')
         print(f'Searching for data in the folder of subject: {subject}')
 
         files_path = processed_data_path / subject / 'FITBIT' / 'Physical Activity'
