@@ -66,6 +66,7 @@ layout = html.Div([
             html.P('2. File generation completed messages'),
             html.P('3. Progress bar for table generations'),
             html.P('4. Option to run only specific subjects in the pipeline'),
+            html.P('5. Log files added to the project folder (logs)'),
         ]),
         dbc.Row([
             html.P('This app guided by the FitBit tutorial website'),
