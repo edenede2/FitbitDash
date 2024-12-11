@@ -9,7 +9,6 @@ import pages.scripts.UTILS.utils as ut
 flask_app = Flask(__name__)
 
 app = dash.Dash(__name__, server=flask_app, external_stylesheets=[dbc.themes.CERULEAN], use_pages=True)
-print('f')
 window = webview.create_window('FitBit App', flask_app, width=800, height=600, resizable=True, fullscreen=False)
 
 sidebar = dbc.Nav(
