@@ -547,10 +547,12 @@ def main(project, now, username):
         sleep_summary(False, True)
         sleep_summary(True, True)
         sleep_summary(False, False)
-
+        logging.info('File generation completed')
 
     except Exception as e:
         print(e)
+        logging.info('File generation failed')
+        logging.error(e)
         time.sleep(10)
 
 
@@ -601,7 +603,7 @@ if __name__ == '__main__':
 
     print(param, now, user_name)
     main(param, now, user_name)
-    logging.info('Script finished successfully')
+    
 
     
     time.sleep(15)

@@ -57,8 +57,15 @@ layout = html.Div([
     html.H1('Welcome to the FitBit App!'),
     dbc.Container([
         dbc.Row([
-            html.P('You using the FitBit App 1.0 version'),
-            html.P('Release date: 2024-12-09'),
+            html.P('You using the FitBit App 1.1 version'),
+            html.P('Release date: 2024-12-11'),
+        ]),
+        dbc.Row([
+            html.H4("What's new in this version:"),
+            html.P('1. Bug fixes'),
+            html.P('2. File generation completed messages'),
+            html.P('3. Progress bar for table generations'),
+            html.P('4. Option to run only specific subjects in the pipeline'),
         ]),
         dbc.Row([
             html.P('This app guided by the FitBit tutorial website'),

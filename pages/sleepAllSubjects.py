@@ -64,6 +64,8 @@ for key in Pconfigs.keys():
 layout = html.Div([
         dcc.Store(id='file-data-store-Sleep-All-Subjects', storage_type='memory'),
         dcc.Store(id='output-file-path-Sleep-All-Subjects', storage_type='memory'),
+        dcc.Store(id='start-time-Sleep-All-Subjects', storage_type='memory'),
+        dcc.Interval(id='interval-Sleep-All-Subjects', interval=3000, n_intervals=0, disabled=True),
 
         dbc.Container([
             dbc.Row([
@@ -266,6 +268,8 @@ def load_fitbit_data(n_clicks, project):
     Output('confirm-dialog-Sleep-All-Subjects', 'displayed'),
     Output('error-gen-dialog', 'displayed'),
     Output('error-gen-dialog', 'message'),
+    Output('interval-Sleep-All-Subjects', 'disabled'),
+    Output('start-time-Sleep-All-Subjects', 'data'),
     Input('Generate-file-button', 'n_clicks'),
     State({'type': 'sleep-all-subjects-table', 'index': ALL}, 'rowData'),
     State('project-selection-dropdown-FitBit-Sleep-All-Subjects', 'value'),
@@ -306,7 +310,7 @@ def initialize_folders(n_clicks, selected_rows, project, username):
 
     
     if username == '':
-        return False, True, 'Please enter your name'
+        return False, True, 'Please enter your name', True, ''
 
 
     try:
@@ -332,12 +336,46 @@ def initialize_folders(n_clicks, selected_rows, project, username):
         # stdout, stderr = process.communicate()
         
 
-        return True, False, ''
+        return True, False, '', False, now
     except Exception as e:
-        return False, True, str(e)
+        return False, True, str(e), True, ''
     
 
 
+@callback(
+    Output('interval-Sleep-All-Subjects', 'disabled'),
+    Output('confirm-dialog-Sleep-All-Subjects', 'displayed'),
+    Output('confirm-dialog-Sleep-All-Subjects', 'message'),
+    Input('interval-Sleep-All-Subjects', 'n_intervals'),
+    State('start-time-Sleep-All-Subjects', 'data')
+)
+def check_file_generation(n_intervals, start_time):
+    if n_intervals == 0:
+        raise PreventUpdate
+    
+    if n_intervals > 0:
+        log_path = Path(rf'.\pages\logs\sleepAllSubjectsScript_{start_time}.log')
+        if os.path.exists(log_path):
+            with open(log_path, 'r') as f:
+                log = f.read()
+            if 'File generation completed' in log:
+                with open(log_path, 'a') as f:
+                    f.write(log + '\n' + 'File generation confirmed')
+                return True, True, 'File generation completed'
+            elif 'File generation failed' in log:
+                with open(log_path, 'a') as f:
+                    f.write(log + '\n' + 'File generation failed')
+                    message = 'File generation failed' + '\n' + f'{log}'
+
+                return True, True, message
+            else:
+                return False, False, ''
+        else:
+            return False, False, ''
+        
+    return False, False, ''
+    
+    
 
      
 @callback(
