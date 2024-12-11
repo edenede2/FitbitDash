@@ -552,14 +552,15 @@ def main(project, now, username):
         if not subject_output_path_history.exists():
             subject_output_path_history.mkdir(parents=True)
         non_relevant_dates = []
-        if subject_dates['NotInIsrael'].values[0]:
+        if subject_dates['NotInIsrael'].values[0] and not pd.isna(subject_dates['NotInIsraelStartDate'].values[0]) and not pd.isna(subject_dates['NotInIsraelEndDate'].values[0]):
+
             non_relevant_dates = pd.date_range(subject_dates['NotInIsraelStartDate'].values[0],
                                                   subject_dates['NotInIsraelEndDate'].values[0])
             
                                                
         HRV_temperature_respiratory_df = HRV_temperature_respiratory_df[~HRV_temperature_respiratory_df['ExperimentDates'].isin(non_relevant_dates)]
         
-        if subject_dates['NotInIsrael_1'].values[0]:
+        if subject_dates['NotInIsrael_1'].values[0] and not pd.isna(subject_dates['NotInIsraelStartDate_1'].values[0]) and not pd.isna(subject_dates['NotInIsraelEndDate_1'].values[0]):
             non_relevant_dates = pd.date_range(subject_dates['NotInIsraelStartDate_1'].values[0],
                                                   subject_dates['NotInIsraelEndDate_1'].values[0])
             

@@ -169,8 +169,9 @@ def load_raw_data(n_clicks, project):
     raw_data_df = pl.DataFrame()
 
     
-
-    for subject in subjects:
+    subjects_tqdm = tqdm(subjects, desc='Searching for data in the folder of subjects', position=0, leave=True)
+    for subject in subjects_tqdm:
+        subjects_tqdm.set_description(f'Searching for data in the folder of subject: {subject}')
         print(f'Searching for data in the folder of subject: {subject}')
         relevant_files = []
         creation_dates = []

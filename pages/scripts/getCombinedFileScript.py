@@ -172,9 +172,11 @@ def main(project, now, username):
 
 
             
-
-            # Read the latest heart rate file
-            subject_heart_rate_df = pl.read_csv(latest_heart_rate_file_path, try_parse_dates=True)
+            try:
+                # Read the latest heart rate file
+                subject_heart_rate_df = pl.read_csv(latest_heart_rate_file_path, try_parse_dates=True)
+            except:
+                subject_heart_rate_df = pl.read_csv(latest_heart_rate_file_path, try_parse_dates=True, encoding='utf8')
 
             subject_heart_rate_df = (
                 subject_heart_rate_df
@@ -947,13 +949,13 @@ def main(project, now, username):
                     # 'dense' = 'consecutive values'
                     subject_means_df['DayOfExperiment'] = subject_means_df['ExperimentDates'].rank(method='dense')
 
-                    if subject_experiment_metadata_row['NotInIsrael'].values[0]:
+                    if subject_experiment_metadata_row['NotInIsrael'].values[0] and not pd.isna(subject_experiment_metadata_row['NotInIsraelStartDate'].values[0]) and not pd.isna(subject_experiment_metadata_row['NotInIsraelEndDate'].values[0]):
                         non_relervant_dates = pd.date_range(subject_experiment_metadata_row['NotInIsraelStartDate'].values[0],
                                                             subject_experiment_metadata_row['NotInIsraelEndDate'].values[0])
                         subject_means_df = subject_means_df[~subject_means_df['ExperimentDates'].isin(non_relervant_dates)]
                         subject_means_df.reset_index(drop=True, inplace=True)
                     
-                    if subject_experiment_metadata_row['NotInIsrael_1'].values[0]:
+                    if subject_experiment_metadata_row['NotInIsrael_1'].values[0] and not pd.isna(subject_experiment_metadata_row['NotInIsraelStartDate_1'].values[0]) and not pd.isna(subject_experiment_metadata_row['NotInIsraelEndDate_1'].values[0]):
                         non_relervant_dates = pd.date_range(subject_experiment_metadata_row['NotInIsraelStartDate_1'].values[0],
                                                             subject_experiment_metadata_row['NotInIsraelEndDate_1'].values[0])
                         subject_means_df = subject_means_df[~subject_means_df['ExperimentDates'].isin(non_relervant_dates)]

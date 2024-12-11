@@ -177,8 +177,8 @@ def load_fitbit_data(n_clicks, project):
                                     try_parse_dates=True)
     except:
         subjects_dates = pl.read_csv(SUBJECTS_DATES,
-                                    parse_dates=True,
-                                    encoding='utf-8')
+                                    try_parse_dates=True,
+                                    encoding='utf8')
 
     subjects_dates_df = subjects_dates.sort(by='Id').unique('Id').drop_nulls('Id')
 
@@ -189,8 +189,9 @@ def load_fitbit_data(n_clicks, project):
     })
 
 
-
-    for folder in os.listdir(DATA_PATH):
+    folders_tqdm = tqdm(os.listdir(DATA_PATH), desc='Checking folders')
+    for folder in folders_tqdm:
+        folders_tqdm.set_description(f'Checking folder {folder}')
         sub_pattern = r'[0-9]{3}$'
         if re.search(sub_pattern, folder):
             sub_name = folder

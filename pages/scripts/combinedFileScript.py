@@ -71,9 +71,13 @@ def main(project, now, username):
 
         SUBJECTS_DATES = METADATA_PATH.joinpath('Subjects Dates.csv')
 
-
-        subjects_dates = pl.read_csv(SUBJECTS_DATES,
+        try:
+            subjects_dates = pl.read_csv(SUBJECTS_DATES,
                                     try_parse_dates=True)
+        except:
+            subjects_dates = pl.read_csv(SUBJECTS_DATES,
+                                    try_parse_dates=True,
+                                    encoding='utf8')
 
         print('Subjects Dates readed')
 
