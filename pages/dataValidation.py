@@ -150,6 +150,7 @@ def load_fitbit_data(n_clicks, project):
     paths_json = json.load(open(r".\pages\Pconfigs\paths.json", "r"))
     project_path = Path(paths_json[project])
 
+    print(f'Project path: {project_path}')
 
 
     DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT = ut.declare_project_global_variables(project_path)
@@ -159,6 +160,8 @@ def load_fitbit_data(n_clicks, project):
     PROJECT_CONFIG = json.load(open(r'.\pages\Pconfigs\paths data.json', 'r'))
         
     SUBJECTS_DATES = METADATA_PATH.joinpath('Subjects Dates.csv')
+
+    print(f'Subjects dates file founded')
 
     try:
         subjects_dates = pl.read_csv(SUBJECTS_DATES,
