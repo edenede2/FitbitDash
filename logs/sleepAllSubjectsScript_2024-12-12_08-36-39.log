@@ -1,0 +1,8 @@
+INFO:root:param: Lab_Session, now: 2024-12-12_08-36-39, user_name: Eden
+INFO:root:File generation failed
+ERROR:root:'DataFrame' object has no attribute 'to_list'
+INFO:root:param: Lab_Session, now: 2024-12-12_08-36-39, user_name: Eden
+INFO:root:File generation failed
+ERROR:root:'DataFrame' object has no attribute 'to_list'
+
+File generation failed

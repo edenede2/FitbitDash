@@ -1,0 +1,8 @@
+INFO:root:param: Lab_Session, now: 2024-12-12_08-38-04, user_name: Eden
+INFO:root:File generation failed
+ERROR:root:list indices must be integers or slices, not str
+INFO:root:param: Lab_Session, now: 2024-12-12_08-38-04, user_name: Eden
+INFO:root:File generation failed
+ERROR:root:list indices must be integers or slices, not str
+
+File generation failed

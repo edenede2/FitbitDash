@@ -396,8 +396,17 @@ def main(project, now, username):
             if not latest_sleep_file_path.exists():
                 print('Can\'t calculate nights because Sleep All Subjects.csv is missing from <Aggregated Output> folder')
                 return
+
+            subjects_to_run_on = pl.read_parquet(rf'.\pages\sub_selection\{project}_sub_selection_sleep_all_subjects.parquet').sort(by='Id').unique('Id').drop_nulls('Id').select('Id').to_series().to_list()  
+
+
+            subjects_with_missing_sleep_files
+
             # read the latest sleep file
-            raw_sleep_df = pd.read_csv(latest_sleep_file_path, parse_dates=['BedStartTime', 'DateOfSleepEvening', 'ExperimentDates'])
+            raw_sleep_df = pl.DataFrame(pd.read_csv(latest_sleep_file_path, parse_dates=['BedStartTime', 'DateOfSleepEvening', 'ExperimentDates'])).filter(pl.col('Id').is_in(subjects_to_run_on)).to_pandas()
+            
+
+            print(f'raw_sleep_df: {raw_sleep_df}')
             # Use only valid sleep rows
             raw_sleep_df = raw_sleep_df[(raw_sleep_df['ValidSleep'] == True) & (raw_sleep_df['MainSleep (Fitbit Calculation)'] == True)]
             # get the list of subjects
