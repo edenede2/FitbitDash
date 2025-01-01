@@ -56,7 +56,9 @@ def main(project, now, username):
 
 
 
-        DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT = ut.declare_project_global_variables(project_path)
+        # DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT = ut.declare_project_global_variables(project_path)
+        DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT = ut.declare_project_global_variables_custom(project_path, '_NEW_CODE')
+
 
         AGGREGATED_OUTPUT_PATH_HISTORY = ut.output_record(OUTPUT_PATH, 'Aggregated Output',username, now)
 
@@ -1184,26 +1186,30 @@ def main(project, now, username):
                         ### Add sleep_regularity_index column ###
                     # According to: * https://www.jmir.org/2018/6/e210/#figure5 *
                     # Create new temporary dataframe for the sleep_regularity_index calculation
-                    temp_df = pd.DataFrame()
-                    temp_df['Mode'] = hr_steps_sleep_df['Mode']
-                    # Replace "unknown" to np.nan and 'in_bed' to 'awake' and convert to int:
-                    temp_df['Mode'] = temp_df['Mode'].replace({"sleeping": -1, "in_bed": 1, "awake": 1, "unknown": np.nan})
-                    # τ = 1440 minutes (from the formula)
-                    minutes_in_a_day = 1440
-                    temp_df['24h_lag_Mode'] = temp_df[["Mode"]].shift(minutes_in_a_day)
-                    # Remove the last 1440 rows (doesn't have shift data anyway and its according to the formula mentioned in comment above.)
-                    temp_df = temp_df[0:len(temp_df) - minutes_in_a_day]
-                    # Calculate the product of s(t)*s(t+τ)
-                    temp_df["Modes_multiply"] = temp_df["Mode"] * temp_df["24h_lag_Mode"]
-                    # Sum of products
-                    sum_of_products = temp_df["Modes_multiply"].sum()
-                    # Total number of valid minutes (count() ignores nan values)
-                    denominator = temp_df["Modes_multiply"].count() - minutes_in_a_day
+                    # temp_df = pd.DataFrame()
+                    # temp_df['Mode'] = hr_steps_sleep_df['Mode']
+                    # # Replace "unknown" to np.nan and 'in_bed' to 'awake' and convert to int:
+                    # temp_df['Mode'] = temp_df['Mode'].replace({"sleeping": -1, "in_bed": 1, "awake": 1, "unknown": np.nan})
+                    # # τ = 1440 minutes (from the formula)
+                    # minutes_in_a_day = 1440
+                    # temp_df['24h_lag_Mode'] = temp_df[["Mode"]].shift(minutes_in_a_day)
+                    # # Remove the last 1440 rows (doesn't have shift data anyway and its according to the formula mentioned in comment above.)
+                    # temp_df = temp_df[0:len(temp_df) - minutes_in_a_day]
+                    # # Calculate the product of s(t)*s(t+τ)
+                    # temp_df["Modes_multiply"] = temp_df["Mode"] * temp_df["24h_lag_Mode"]
+                    # # Sum of products
+                    # sum_of_products = temp_df["Modes_multiply"].sum()
+                    # # Total number of valid minutes (count() ignores nan values)
+                    # denominator = temp_df["Modes_multiply"].count() - minutes_in_a_day
 
-                    # Calculate the final sleep regularity index :
-                    sri = 200 * ((sum_of_products / denominator) - 0.5)
+                    # # Calculate the final sleep regularity index :
+                    # sri = 200 * ((sum_of_products / denominator) - 0.5)
                     # Add the sleep_regularity_index to the subject_full_week_dict
+                    sri, ndays = get_sri(hr_steps_sleep_df)
+                    if ndays == 0:
+                        sri = np.nan
                     subject_full_week_dict['sleep_regularity_index'] = sri
+                    subject_full_week_dict['sleep_regularity_index_days_based'] = ndays
 
                     subjects_full_week_means_list.append(subject_full_week_dict)
                 # Create a DataFrame from the lists of dictionaries # Save output CSV file to project aggregated output folder
@@ -1281,6 +1287,141 @@ def main(project, now, username):
 
 
 
+def get_sri(hr_steps_sleep_df):
+    hr_steps_sleep_df = pl.DataFrame(hr_steps_sleep_df)
+    valid_dates_df = (
+        hr_steps_sleep_df
+        .sort('DateAndMinute')
+        .with_columns(
+            Mode = pl.Series(hr_steps_sleep_df.select(pl.col('Mode')))
+        )
+        .with_columns(
+            Mode_ = pl.when(pl.col('Mode') == 'awake')
+            .then(1)
+            .when(pl.col('Mode') == 'in_bed')
+            .then(1)
+            .when(pl.col('Mode') == 'sleeping')
+            .then(0)
+            .when(pl.col('Mode') == 'unknown')
+            .then(None),
+            Date = pl.col('DateAndMinute').dt.date(),
+            Time = pl.col('DateAndMinute').dt.time()
+        )
+        .group_by(
+            'Date'
+        )
+        .agg(
+            [
+                pl.len().alias('count_minutes'),
+                pl.col('Mode_').is_not_null().sum().alias('valid_minutes')
+            ]
+        )
+        .filter(
+            (pl.col('count_minutes') == 1440) & (pl.col('valid_minutes') ==1440)
+
+        )
+        .with_columns(
+        Days_diff = pl.col('Date').diff(1).cast(pl.Duration),
+        days_diff_seq = pl.col('Date').diff().shift(-1).cast(pl.Duration)
+        )
+        .filter(
+            ~(
+                ((pl.col('Days_diff') > datetime.timedelta(days=1)) | pl.col('Days_diff').is_null()) &
+                ((pl.col('days_diff_seq') >  datetime.timedelta(days=1)) | pl.col('days_diff_seq').is_null())
+        )
+    )
+)
+    
+
+    valid_dates = valid_dates_df['Date'].unique()
+
+    valid_hr_steps_sleep_df  = (
+        hr_steps_sleep_df
+        .filter(
+            pl.col('DateAndMinute').dt.date().is_in(valid_dates)
+        )
+        .with_columns(
+            Date = pl.col('DateAndMinute').dt.date(),
+            Time = pl.col('DateAndMinute').dt.time()
+        )
+        
+        
+
+    )
+
+    dates = valid_dates.to_list()
+
+    ndays = len(dates)
+
+    SRI = None
+
+    # The dates need to be consecutive
+
+
+
+
+    if ndays > 1:
+        delta_sum = 0
+        M = 1440
+
+        for i in range(ndays - 1):
+            
+            if dates[i +1] - dates[i] == datetime.timedelta(days=1):
+                today = dates[i]
+                next_day = dates[i+1]
+            else:
+                ndays -= 1
+                continue
+
+            day1 = (
+                valid_hr_steps_sleep_df
+                .filter(
+                    pl.col('DateAndMinute').dt.date() == today
+                )
+            )
+
+            day2 = (
+                valid_hr_steps_sleep_df
+                .filter(
+                    pl.col('DateAndMinute').dt.date() == next_day
+                )
+            )
+
+            if day1.shape[0] == day2.shape[0]:
+                merged = (
+                    day1
+                    .join(
+                        day2,
+                        on = 'Time',
+                        how = 'inner',
+                        suffix = '_next_day'
+                    )
+                )
+
+                delta = (
+                    merged
+                    .with_columns(
+                        (pl.col('Mode') == pl.col('Mode_next_day')).cast(int)
+                    )
+                )
+
+                delta_sum += delta['Mode'].sum()
+            else:
+                ndays -= 1
+
+        N = ndays -1
+        if N > 0:
+            SRI = -100 + (200 / (M * N)) * delta_sum
+            return SRI, ndays
+        else:
+            SRI = None
+            ndays = 0
+            return SRI, ndays
+    else:
+        SRI = None
+        ndays = 0
+        return SRI, ndays
+
 
 
 def is_dst_change(date: datetime.datetime) -> bool:
@@ -1333,7 +1474,7 @@ if __name__ == '__main__':
         user_name = sys.argv[3]
 
     except IndexError:
-        param = 'Lab_Session'
+        param = 'NOVA_HIPPA'
         now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         user_name = 'Unknown'
 
