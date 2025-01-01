@@ -1,3 +1,6 @@
 .venv/
 setup_file.py
 pages\Pconfigs
+pages\__pycache__
+pages\scripts\__pycache__
+pages\scripts\UTILS\__pycache__

@@ -131,8 +131,7 @@ def main(project, now, username):
             continue
         if run_on_specific_subjects and subject not in subjects_to_run_on:
             continue
-        else:
-            continue
+
         tqdm_subjects.set_description(f'Subject: {subject}', refresh=True)
 
         if not os.path.exists(OUTPUT_PATH.joinpath(subject)):
