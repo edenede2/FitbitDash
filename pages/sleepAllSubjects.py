@@ -95,7 +95,8 @@ layout = html.Div([
                         id='usenname-Sleep-All-Subjects',
                         placeholder='user_name',
                         value=''
-                    )
+                    ),
+                    
                 ]),
 
                 html.Hr()
@@ -208,6 +209,9 @@ def load_fitbit_data(n_clicks, project):
                 continue
             for folder_ in os.listdir(Path(DATA_PATH).joinpath(sub_name, 'FITBIT')):
                 if 'Sleep' in folder_:
+                    if not os.path.isdir(Path(DATA_PATH).joinpath(sub_name, 'FITBIT', folder_)):
+                        print(f'No FITBIT Sleep folder for {sub_name}')
+                        continue
                     sleep_json_pattern = r'^sleep-'
                     sleep_jsons_amount = 0
                     for file in os.listdir(Path(DATA_PATH).joinpath(sub_name, 'FITBIT', folder_)):

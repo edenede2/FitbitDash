@@ -1,0 +1,104 @@
+ERROR:root:Error: could not parse `2024-06-16 00:00:00` as dtype `date` at column 'ExperimentDates' (column number 3)
+
+The current offset in the file is 156063 bytes.
+
+You might want to try:
+- increasing `infer_schema_length` (e.g. `infer_schema_length=10000`),
+- specifying correct dtype with the `dtypes` argument
+- setting `ignore_errors` to `True`,
+- adding `2024-06-16 00:00:00` to the `null_values` list.
+
+Original error: ```could not parse '2024-06-16 00:00:00' with pattern 'DateYMD'```
+INFO:root:File generation failed
+ERROR:root:Error: could not parse `2024-06-16 00:00:00` as dtype `date` at column 'ExperimentDates' (column number 3)
+
+The current offset in the file is 156063 bytes.
+
+You might want to try:
+- increasing `infer_schema_length` (e.g. `infer_schema_length=10000`),
+- specifying correct dtype with the `dtypes` argument
+- setting `ignore_errors` to `True`,
+- adding `2024-06-16 00:00:00` to the `null_values` list.
+
+Original error: ```could not parse '2024-06-16 00:00:00' with pattern 'DateYMD'```
+INFO:root:File generation failed
+
+File generation failedERROR:root:Error: could not parse `2024-06-16 00:00:00` as dtype `date` at column 'ExperimentDates' (column number 3)
+
+The current offset in the file is 156063 bytes.
+
+You might want to try:
+- increasing `infer_schema_length` (e.g. `infer_schema_length=10000`),
+- specifying correct dtype with the `dtypes` argument
+- setting `ignore_errors` to `True`,
+- adding `2024-06-16 00:00:00` to the `null_values` list.
+
+Original error: ```could not parse '2024-06-16 00:00:00' with pattern 'DateYMD'```
+INFO:root:File generation failed
+ERROR:root:Error: could not parse `2024-06-16 00:00:00` as dtype `date` at column 'ExperimentDates' (column number 3)
+
+The current offset in the file is 156063 bytes.
+
+You might want to try:
+- increasing `infer_schema_length` (e.g. `infer_schema_length=10000`),
+- specifying correct dtype with the `dtypes` argument
+- setting `ignore_errors` to `True`,
+- adding `2024-06-16 00:00:00` to the `null_values` list.
+
+Original error: ```could not parse '2024-06-16 00:00:00' with pattern 'DateYMD'```
+INFO:root:File generation failed
+
+File generation failed
+File generation failedERROR:root:Error: could not parse `2024-06-16 00:00:00` as dtype `date` at column 'ExperimentDates' (column number 3)
+
+The current offset in the file is 156063 bytes.
+
+You might want to try:
+- increasing `infer_schema_length` (e.g. `infer_schema_length=10000`),
+- specifying correct dtype with the `dtypes` argument
+- setting `ignore_errors` to `True`,
+- adding `2024-06-16 00:00:00` to the `null_values` list.
+
+Original error: ```could not parse '2024-06-16 00:00:00' with pattern 'DateYMD'```
+INFO:root:File generation failed
+ERROR:root:Error: could not parse `2024-06-16 00:00:00` as dtype `date` at column 'ExperimentDates' (column number 3)
+
+The current offset in the file is 156063 bytes.
+
+You might want to try:
+- increasing `infer_schema_length` (e.g. `infer_schema_length=10000`),
+- specifying correct dtype with the `dtypes` argument
+- setting `ignore_errors` to `True`,
+- adding `2024-06-16 00:00:00` to the `null_values` list.
+
+Original error: ```could not parse '2024-06-16 00:00:00' with pattern 'DateYMD'```
+INFO:root:File generation failed
+
+File generation failedERROR:root:Error: could not parse `2024-06-16 00:00:00` as dtype `date` at column 'ExperimentDates' (column number 3)
+
+The current offset in the file is 156063 bytes.
+
+You might want to try:
+- increasing `infer_schema_length` (e.g. `infer_schema_length=10000`),
+- specifying correct dtype with the `dtypes` argument
+- setting `ignore_errors` to `True`,
+- adding `2024-06-16 00:00:00` to the `null_values` list.
+
+Original error: ```could not parse '2024-06-16 00:00:00' with pattern 'DateYMD'```
+INFO:root:File generation failed
+ERROR:root:Error: could not parse `2024-06-16 00:00:00` as dtype `date` at column 'ExperimentDates' (column number 3)
+
+The current offset in the file is 156063 bytes.
+
+You might want to try:
+- increasing `infer_schema_length` (e.g. `infer_schema_length=10000`),
+- specifying correct dtype with the `dtypes` argument
+- setting `ignore_errors` to `True`,
+- adding `2024-06-16 00:00:00` to the `null_values` list.
+
+Original error: ```could not parse '2024-06-16 00:00:00' with pattern 'DateYMD'```
+INFO:root:File generation failed
+
+File generation failed
+File generation failed
+File generation failed

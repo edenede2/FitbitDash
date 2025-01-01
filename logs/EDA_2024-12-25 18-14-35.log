@@ -1,0 +1,2 @@
+INFO:root:EDA started at 2024-12-25 18-14-35 by Unknown
+ERROR:root:Tz-aware datetime.datetime cannot be converted to datetime64 unless utc=True, at position 1

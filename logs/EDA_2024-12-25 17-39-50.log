@@ -1,0 +1,3 @@
+INFO:root:EDA started at 2024-12-25 17-39-50 by Unknown
+ERROR:root:name 'get_subject_dates_of_experiment' is not defined
+INFO:root:File generation failed

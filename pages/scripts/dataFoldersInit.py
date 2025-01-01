@@ -464,7 +464,7 @@ if __name__ == '__main__':
         print(now)
         user_name = sys.argv[3]
     except IndexError:
-        param = 'NOVA_TESTS'
+        param = 'FIBRO'
         now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         # now = '2024-08-26_13:48:25'
         user_name = 'Unknown'

@@ -1,0 +1,2 @@
+ERROR:root:Error: all the input array dimensions except for the concatenation axis must match exactly, but along dimension 1, the array at index 0 has size 3168 and the array at index 1 has size 33
+INFO:root:File generation failed

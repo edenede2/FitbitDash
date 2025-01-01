@@ -157,7 +157,7 @@ layout = html.Div([
 def load_raw_data(n_clicks, project):
     if n_clicks == 0:
         raise PreventUpdate
-
+    
     data_path = Pconfigs[project]
     print(f'Project proccesed data path: {project}')
 
@@ -447,10 +447,12 @@ def show_available_data(n_clicks, selected_rows, project):
     if n_clicks == 0:
         raise PreventUpdate
 
-    data_path = Pconfigs[project]
+    project_path = Path(paths_json[project])
+    DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT = ut.declare_project_global_variables_custom(project_path, '_NEW_CODE')
+    data_path = DATA_PATH
     print(f'Project proccesed data path: {project}')
 
-    output_path = Path(data_path) / 'Outputs'
+    output_path = OUTPUT_PATH
     print(f'Processed data path: {output_path}')
 
     if not output_path.exists():

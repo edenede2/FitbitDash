@@ -159,6 +159,19 @@ def update_paths(n_clicks, value, children):
             ]),
             dbc.Row([
                 dbc.Col([
+                    html.Div('OPTIONAL: Please enter the input/output folders extension:'),
+                    dbc.Input(
+                        id={
+                            'type': 'input-output-extension-settings',
+                            'index': 1
+                        },
+                        placeholder='input_output_extension',
+                        value=''
+                    )
+                ]),
+            ]),
+            dbc.Row([
+                dbc.Col([
                     dbc.Button(
                         'Save',
                         id={
@@ -198,6 +211,20 @@ def update_paths(n_clicks, value, children):
                         },
                         placeholder='raw_data_path',
                         value=raw_data_path
+                    )
+                ]),
+            ]),
+            html.Hr(),
+            dbc.Row([
+                dbc.Col([
+                    html.Div('OPTIONAL: Please enter the input/output folders extension:'),
+                    dbc.Input(
+                        id={
+                            'type': 'input-output-extension-settings',
+                            'index': 1
+                        },
+                        placeholder='input_output_extension',
+                        value=''
                     )
                 ]),
             ]),
@@ -250,9 +277,10 @@ def update_paths(n_clicks, value, children):
     State({'type': 'raw-data-path-settings', 'index': ALL}, 'value'),
     State({'type': 'processed-data-path-settings', 'index': ALL}, 'value'),
     State({'type': 'new-project-name-settings', 'index': ALL}, 'value'),
+    State({'type': 'input-output-extension-settings', 'index': ALL}, 'value'),
     State('project-selection-dropdown-FitBit-settings', 'value')
 )
-def save_settings(n_clicks, raw_data_path, processed_data_path,new_project_name, project_name):
+def save_settings(n_clicks, raw_data_path, processed_data_path,new_project_name, io_extension, project_name):
     if not n_clicks:
         raise PreventUpdate
 
@@ -262,8 +290,9 @@ def save_settings(n_clicks, raw_data_path, processed_data_path,new_project_name,
     if n_clicks[0] == 0:
         raise PreventUpdate
 
+    raw_data_json_path = r'.\pages\Pconfigs\paths data.json'
     if project_name == 'NEW':
-        raw_data_json_path = r'.\pages\Pconfigs\paths data.json'
+        
 
 
         raw_data = json.load(open(raw_data_json_path, "r"))
@@ -273,11 +302,22 @@ def save_settings(n_clicks, raw_data_path, processed_data_path,new_project_name,
         Pconfigs[new_project_name[0]] = processed_data_path[0]
         json.dump(Pconfigs, open(r".\pages\Pconfigs\paths.json", "w"), indent=4) 
 
+        if io_extension[0] != '':
+            io_extension_json_path = r'.\pages\Pconfigs\io_extension.json'
+
+            if not os.path.exists(io_extension_json_path):
+                io_extension_data = {}
+                io_extension_data[new_project_name[0]] = io_extension[0]
+                json.dump(io_extension_data, open(io_extension_json_path, "w"), indent=4)
+
+            io_extension_data = json.load(open(io_extension_json_path, "r"))
+            io_extension_data[new_project_name[0]] = io_extension[0]
+            json.dump(io_extension_data, open(io_extension_json_path, "w"), indent=4)
+        
         return True
 
     else:
         
-        raw_data_json_path = r'.\pages\Pconfigs\paths data.json'
         
         
         raw_data = json.load(open(raw_data_json_path, "r"))
@@ -286,6 +326,18 @@ def save_settings(n_clicks, raw_data_path, processed_data_path,new_project_name,
 
         Pconfigs[new_project_name[0]] = processed_data_path[0]
         json.dump(Pconfigs, open(r".\pages\Pconfigs\paths.json", "w"), indent=4)
+
+        if io_extension[0] != '':
+            io_extension_json_path = r'.\pages\Pconfigs\io_extension.json'
+
+            if not os.path.exists(io_extension_json_path):
+                io_extension_data = {}
+                io_extension_data[new_project_name[0]] = io_extension[0]
+                json.dump(io_extension_data, open(io_extension_json_path, "w"), indent=4)
+
+            io_extension_data = json.load(open(io_extension_json_path, "r"))
+            io_extension_data[new_project_name[0]] = io_extension[0]
+            json.dump(io_extension_data, open(io_extension_json_path, "w"), indent=4)
 
         return True
 

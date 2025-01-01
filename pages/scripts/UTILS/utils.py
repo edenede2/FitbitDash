@@ -510,6 +510,39 @@ def declare_project_global_variables(project_path):
     SUBJECT_FOLDER_FORMAT = 'sub_[0-9]{3}' # Set the format for the folder names (regular expression)
     return DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT
 
+def declare_project_global_variables_custom(project_path, path_ext=None):
+    # Folders
+    if path_ext is None:
+        DATA_PATH = Path(project_path.joinpath('Data'))
+        OUTPUT_PATH = Path(project_path.joinpath('Outputs'))
+        AGGREGATED_OUTPUT_PATH = Path(OUTPUT_PATH.joinpath('Aggregated Output'))
+        ARCHIVE_PATH = Path(OUTPUT_PATH.joinpath('Archive'))
+        METADATA_PATH = Path(project_path.joinpath('Metadata'))
+    else:
+        DATA_PATH = Path(project_path.joinpath('Data' + path_ext))
+        OUTPUT_PATH = Path(project_path.joinpath('Outputs' + path_ext))
+        AGGREGATED_OUTPUT_PATH = Path(OUTPUT_PATH.joinpath('Aggregated Output'))
+        ARCHIVE_PATH = Path(OUTPUT_PATH.joinpath('Archive'))
+        METADATA_PATH = Path(project_path.joinpath('Metadata'))
+        
+    # Formats
+    SUBJECT_FOLDER_FORMAT = 'sub_[0-9]{3}' # Set the format for the folder names (regular expression)
+    return DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT
+
+
+# NEW cersion of declare_project_global_variables
+def declare_project_global_variables_new_code(project_path):
+    # Folders
+    DATA_PATH = Path(project_path.joinpath('Data_NEW_CODE'))
+    OUTPUT_PATH = Path(project_path.joinpath('Outputs_NEW_CODE'))
+    AGGREGATED_OUTPUT_PATH = Path(OUTPUT_PATH.joinpath('Aggregated Output'))
+    ARCHIVE_PATH = Path(OUTPUT_PATH.joinpath('Archive'))
+    METADATA_PATH = Path(project_path.joinpath('Metadata'))
+    
+        
+    # Formats
+    SUBJECT_FOLDER_FORMAT = 'sub_[0-9]{3}' # Set the format for the folder names (regular expression)
+    return DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT
 
 # NEW cersion of declare_project_global_variables
 def declare_project_global_variables_HR_TEST(project_path):

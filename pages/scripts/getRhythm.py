@@ -1,4 +1,5 @@
 from flask import session
+import pickle as pkl
 from dash import dcc, html, Dash, dependencies, dash_table, Input, Output, State, Patch, MATCH, ALL, callback
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
@@ -62,8 +63,8 @@ try:
 
 
 
-        # DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT = ut.declare_project_global_variables(project_path)
-        DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT = ut.declare_project_global_variables_custom(project_path, '_NEW_CODE')
+        DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT = ut.declare_project_global_variables(project_path)
+        # DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT = ut.declare_project_global_variables_custom(project_path, '_NEW_CODE')
 
         AGGREGATED_OUTPUT_PATH_HISTORY = ut.output_record(OUTPUT_PATH, 'Aggregated Output',username, now)
 
@@ -259,6 +260,19 @@ try:
                 subject_output_path_history.mkdir(parents=True)
             
             final_sub_df.write_csv(subject_output_path_history.joinpath(f'{subject} cosinor.csv'))
+
+            
+            for i, date in enumerate(result.keys()):
+                # Ensure the directory for the specific date exists
+                date_path = subject_output_path_history
+                if not date_path.exists():
+                    date_path.mkdir(parents=True, exist_ok=True)
+                with open(date_path.joinpath(f'{subject} win {i} cosinor object.pkl'), 'wb') as f:
+                    pkl.dump(result[date], f)
+
+
+
+
             
             if len(preprocessed_data) != 0:
                 pl.DataFrame(data).write_parquet(subject_output_path_history.joinpath(f'{subject} cosinor preprocessed data ({signal}).parquet'))
@@ -297,17 +311,17 @@ try:
             all_subjects_json[subject] = json_visu_sub
 
 
-        all_subjects_cosinor_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_cosinor_w{window_size}_incr{incriment_size}_ds{downsample_rate}_missingThr{missing_data_thr}_interpolation_{intepolation}.csv')
-        all_subjects_cosinor_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_cosinor_w{window_size}_incr{incriment_size}_ds{downsample_rate}_missingThr{missing_data_thr}_interpolation_{intepolation}.csv')
+        all_subjects_cosinor_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_cosinor_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.csv')
+        all_subjects_cosinor_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_cosinor_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.csv')
         
-        all_subjects_visu_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_visu_w{window_size}_incr{incriment_size}_ds{downsample_rate}_missingThr{missing_data_thr}_interpolation_{intepolation}.parquet')
-        all_subjects_visu_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_visu_w{window_size}_incr{incriment_size}_ds{downsample_rate}_missingThr{missing_data_thr}_interpolation_{intepolation}.parquet')
+        all_subjects_visu_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_visu_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.parquet')
+        all_subjects_visu_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_visu_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.parquet')
         
-        all_subjects_json_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_json_w{window_size}_incr{incriment_size}_ds{downsample_rate}_missingThr{missing_data_thr}_interpolation_{intepolation}.json')
-        all_subjects_json_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_json_w{window_size}_incr{incriment_size}_ds{downsample_rate}_missingThr{missing_data_thr}_interpolation_{intepolation}.json')
+        all_subjects_json_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_json_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.json')
+        all_subjects_json_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_json_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.json')
 
-        all_subjects_estimates_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_estimates_w{window_size}_incr{incriment_size}_ds{downsample_rate}_missingThr{missing_data_thr}_interpolation_{intepolation}.parquet')
-        all_subjects_estimates_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_estimates_w{window_size}_incr{incriment_size}_ds{downsample_rate}_missingThr{missing_data_thr}_interpolation_{intepolation}.parquet')
+        all_subjects_estimates_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_estimates_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.parquet')
+        all_subjects_estimates_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_estimates_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.parquet')
 
         if not all_subjects_cosinor_path.exists():
             all_subjects_cosinor.sort(['Id', 'ExperimentDay'])
@@ -370,8 +384,8 @@ try:
 
 
 
-        all_subjects_preprocessed_data_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_cosinor_preprocessed_data_w{window_size}_incr{incriment_size}_ds{downsample_rate}_missingThr{missing_data_thr}_interpolation_{intepolation}.parquet')
-        all_subjects_preprocessed_data_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_cosinor_preprocessed_data_w{window_size}_incr{incriment_size}_ds{downsample_rate}_missingThr{missing_data_thr}_interpolation_{intepolation}.parquet')
+        all_subjects_preprocessed_data_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_cosinor_preprocessed_data_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.parquet')
+        all_subjects_preprocessed_data_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_cosinor_preprocessed_data_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.parquet')
 
         if not all_subjects_preprocessed_data_path.exists():
             all_subjects_cosinor_preprocessed_data.write_parquet(all_subjects_preprocessed_data_path_hist)
@@ -408,6 +422,8 @@ try:
                 'acrophase (time)'
             ])
         )
+
+
 
         all_subjects_cosinor_agg = (
             all_subjects_cosinor_agg
@@ -510,7 +526,7 @@ try:
         )
 
 
-        all_subjects_cosinor_agg_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_cosinor_agg_w{window_size}_incr{incriment_size}_ds{downsample_rate}_missingThr{missing_data_thr}_interpolation_{intepolation}.csv')
+        all_subjects_cosinor_agg_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_cosinor_agg_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.csv')
 
         if not all_subjects_cosinor_agg_path.exists():
             all_subjects_cosinor_agg.write_csv(all_subjects_cosinor_agg_path)
@@ -524,7 +540,7 @@ try:
             )
 
             all_subjects_cosinor_agg = pl.concat([old_all_subjects_cosinor_agg, all_subjects_cosinor_agg], how='vertical_relaxed')
-            all_subjects_cosinor_agg_path = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath('Aggregated Output').joinpath(f'all_subjects_cosinor_agg_w{window_size}_incr{incriment_size}_ds{downsample_rate}_missingThr{missing_data_thr}_interpolation_{intepolation}.csv')
+            all_subjects_cosinor_agg_path = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath('Aggregated Output').joinpath(f'all_subjects_cosinor_agg_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.csv')
             all_subjects_cosinor_agg.write_csv(all_subjects_cosinor_agg_path)
 
         ut.check_for_duplications(AGGREGATED_OUTPUT_PATH, AGGREGATED_OUTPUT_PATH_HISTORY)
@@ -740,9 +756,9 @@ try:
                 'CI(amplitude)': params['CI(amplitude)'],
                 'CI(acrophase)': params['CI(acrophase)'],
                 'CI(mesor)': params['CI(mesor)'],
-                'y_estimated_max_loc': estimated_x[np.argmax(estimated_y)],
-                'y_estimated_min_loc': estimated_x[np.argmin(estimated_y)],
-                'y_estimated_min': np.min(estimated_y),
+                'y_estimated_max_loc': estimated_x[np.argmax(estimated_y[:500])],
+                'y_estimated_min_loc': estimated_x[np.argmin(estimated_y[:500])],
+                'y_estimated_min': np.min(estimated_y[:500]),
             }
 
 
@@ -1078,7 +1094,7 @@ if __name__ == '__main__':
 
 
         except IndexError:
-            param = 'NOVA_TESTS'
+            param = 'NOVA_HIPPA'
             now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
             user_name = 'Unknown'
             include_not_il = False

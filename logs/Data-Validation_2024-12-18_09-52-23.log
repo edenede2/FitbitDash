@@ -1,0 +1,10 @@
+INFO:root:User: Eden
+INFO:root:File generation started
+ERROR:root:Error in the main function: datatypes of join keys don't match - `Id`: null on left does not match `Id`: str on right
+INFO:root:File generation failed
+INFO:root:User: Eden
+INFO:root:File generation started
+ERROR:root:Error in the main function: datatypes of join keys don't match - `Id`: null on left does not match `Id`: str on right
+INFO:root:File generation failed
+
+File generation failed
