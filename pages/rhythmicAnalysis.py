@@ -369,6 +369,28 @@ def load_raw_data(n_clicks, project):
                     }
                 ),
                 html.Br(),
+                html.H5('Max Missing Sequence per Day'),
+                html.P('The max missing sequence per day is the maximum number of consecutive missing data points that will be tolerated per day'),
+                dcc.Slider(
+                    id={'type': 'max-missing-sequence-slider', 'index': 1},
+                    min = 0,
+                    max = 100,
+                    value = 10,
+                    marks = {
+                        0: '0',
+                        10: '10',
+                        20: '20',
+                        30: '30',
+                        40: '40',
+                        50: '50',
+                        60: '60',
+                        70: '70',
+                        80: '80',
+                        90: '90',
+                        100: '100'
+                    }
+                ),
+                html.Br(),
                 html.H5('Data interpolation'),
                 html.P('To interpolate the data with sessional component decomposition and linear interpolation'),
                 dbc.Checkbox(id={'type': 'data-interpolation-checkbox', 'index': 1}, value=False),
@@ -447,7 +469,7 @@ def show_available_data(n_clicks, selected_rows, project):
     if n_clicks == 0:
         raise PreventUpdate
 
-    project_path = Path(paths_json[project])
+    project_path = Path(p[project])
     DATA_PATH, OUTPUT_PATH, ARCHIVE_PATH, AGGREGATED_OUTPUT_PATH, METADATA_PATH, SUBJECT_FOLDER_FORMAT = ut.declare_project_global_variables_custom(project_path, '_NEW_CODE')
     data_path = DATA_PATH
     print(f'Project proccesed data path: {project}')
@@ -530,10 +552,11 @@ def show_available_data(n_clicks, selected_rows, project):
     State({'type': 'increment-size-slider', 'index': ALL}, 'value'),
     State({'type': 'downsample-rate-slider', 'index': ALL}, 'value'),
     State({'type': 'missing-data-threshold-slider', 'index': ALL}, 'value'),
+    State({'type': 'max-missing-sequence-slider', 'index': ALL}, 'value'),
     State({'type': 'data-interpolation-checkbox', 'index': ALL}, 'value'),
     State({'type': 'signal-dropdown', 'index': ALL}, 'value')
 )
-def run_preprocessing(n_clicks, raw_data, username, project, include_not_in_il, include_dst, window_size, increment_size, downsample_rate, missing_data_threshold, data_interpolation, signal):
+def run_preprocessing(n_clicks, raw_data, username, project, include_not_in_il, include_dst, window_size, increment_size, downsample_rate, missing_data_threshold, max_missing_seq ,data_interpolation, signal):
     if n_clicks == 0:
         raise PreventUpdate
     
@@ -579,15 +602,16 @@ def run_preprocessing(n_clicks, raw_data, username, project, include_not_in_il, 
         param9 = missing_data_threshold[0]
         param10 = data_interpolation[0]
         param11 = signal[0]
+        param12 = max_missing_seq[0]
 
         
         script_path = r'.\pages\scripts\getRhythm.py'
 
         if platform.system() == 'Windows':
-            command = f'start cmd /c python "{script_path}" {param} {param2} {param3} {param4} {param5} {param6} {param7} {param8} {param9} {param10} {param11}'
+            command = f'start cmd /c python "{script_path}" {param} {param2} {param3} {param4} {param5} {param6} {param7} {param8} {param9} {param10} {param11} {param12}'
             print(command)
         else:
-            command = f'python3 "{script_path}" {param} {param2} {param3} {param4} {param5} {param6} {param7} {param8} {param9} {param10} {param11}'
+            command = f'python3 "{script_path}" {param} {param2} {param3} {param4} {param5} {param6} {param7} {param8} {param9} {param10} {param11} {param12}'
             print(command)
 
         process = subprocess.Popen(command, 
@@ -620,11 +644,12 @@ def run_preprocessing(n_clicks, raw_data, username, project, include_not_in_il, 
     State({'type': 'increment-size-slider', 'index': ALL}, 'value'),
     State({'type': 'downsample-rate-slider', 'index': ALL}, 'value'),
     State({'type': 'missing-data-threshold-slider', 'index': ALL}, 'value'),
+    State({'type': 'max-missing-sequence-slider', 'index': ALL}, 'value'),
     State({'type': 'data-interpolation-checkbox', 'index': ALL}, 'value'),
     State({'type': 'signal-dropdown', 'index': ALL}, 'value'),
     prevent_initial_call=True
 )
-def run_preprocessings(n_clicks, raw_data, username, project, include_not_in_il, include_dst, window_size, increment_size, downsample_rate, missing_data_threshold, data_interpolation, signal):
+def run_preprocessings(n_clicks, raw_data, username, project, include_not_in_il, include_dst, window_size, increment_size, downsample_rate, missing_data_threshold, max_missing_seq, data_interpolation, signal):
     if n_clicks == 0:
         raise PreventUpdate
     
@@ -670,15 +695,16 @@ def run_preprocessings(n_clicks, raw_data, username, project, include_not_in_il,
         param9 = missing_data_threshold[0]
         param10 = data_interpolation[0]
         param11 = signal[0]
+        param12 = max_missing_seq[0]
 
         
         script_path = r'.\pages\scripts\getRhythm.py'
 
         if platform.system() == 'Windows':
-            command = f'start cmd /c python "{script_path}" {param} {param2} {param3} {param4} {param5} {param6} {param7} {param8} {param9} {param10} {param11}'
+            command = f'start cmd /c python "{script_path}" {param} {param2} {param3} {param4} {param5} {param6} {param7} {param8} {param9} {param10} {param11} {param12}'
             print(command)
         else:
-            command = f'python3 "{script_path}" {param} {param2} {param3} {param4} {param5} {param6} {param7} {param8} {param9} {param10} {param11}'
+            command = f'python3 "{script_path}" {param} {param2} {param3} {param4} {param5} {param6} {param7} {param8} {param9} {param10} {param11} {param12}'
             print(command)
 
         process = subprocess.Popen(command, 
@@ -824,7 +850,7 @@ def load_output(n_clicks, selected_folders, project):
 
     files_df = pd.DataFrame({
         'File': files,
-        'Creation Date': [datetime.datetime.fromtimestamp(files_dates[file]).strftime('%Y-%m-%d %H:%M:%S') for file in files]
+        'Creation Date': [dt.datetime.fromtimestamp(files_dates[file]).strftime('%Y-%m-%d %H:%M:%S') for file in files]
     })
 
     rows = files_df.to_dict('records')

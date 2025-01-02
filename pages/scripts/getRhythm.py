@@ -50,7 +50,7 @@ warnings.filterwarnings('ignore')
 
 
 try:
-    def main(project, now, username, not_in_il, dst_change, window_size, incriment_size, downsample_rate, missing_data_thr, data_interpolation, signal):
+    def main(project, now, username, not_in_il, dst_change, window_size, incriment_size, downsample_rate, missing_data_thr, data_interpolation, signal, max_missing_seq):
         
         FIRST = 0
         LAST = -1
@@ -196,6 +196,9 @@ try:
                 )
 
                 total_points = data_in_window.shape[0]
+
+                if total_points/1440 < window_size:
+                    continue
                 missing_points = data_in_window.filter(pl.col(signal).is_null()).shape[0]
                 missing_percentage = (missing_points / total_points) * 100 if total_points > 0 else 100
 
@@ -204,11 +207,13 @@ try:
 
                 null_sequences = (
                     data_in_window
-                    .select(
+                    .select([
                         pl.when(pl.col(signal).is_null())
                         .then(1)
                         .otherwise(0)
-                        .alias("is_null")
+                        .alias("is_null"),
+                        pl.col("DateAndMinute").dt.date().alias("date")
+                    ]
                     )
                     .with_columns(
                         group_id = pl.col("is_null") != pl.col("is_null").shift(1).cum_sum()
@@ -218,14 +223,17 @@ try:
 
                 null_sequences=(
                     null_sequences
-                    .group_by("group_id")
+                    .group_by("group_id", "date")
                     .agg(pl.col('is_null').count().alias('null_length'))
                 )
 
                 max_null_sequence = null_sequences.select(pl.col('null_length').max()).item() if not null_sequences.is_empty() else 0
                 total_nulls = null_sequences.select(pl.col('null_length').sum()).item() if not null_sequences.is_empty() else 0
 
+                max_missing_seq_real = int(max_missing_seq/100 * 1440)
 
+                if max_missing_seq_real < max_null_sequence:
+                    continue
 
                 downsampled_data = downsample_signal(data_in_window, downsample_rate, signal)
 
@@ -970,6 +978,7 @@ try:
 
         while current_start <= end_datetime:
             current_end = current_start + delta_window - datetime.timedelta(seconds=1)
+            
             label = f"{current_start.strftime('%Y-%m-%d %H:%M:%S')} to {current_end.strftime('%Y-%m-%d %H:%M:%S')}"
             windows.append({
                 'window_id': window_id,
@@ -1091,6 +1100,7 @@ if __name__ == '__main__':
             missing_data_threshold = int(sys.argv[9])
             intepolation = sys.argv[10]
             signal = sys.argv[11]
+            max_missing_seq = int(sys.argv[12])
 
 
         except IndexError:
@@ -1106,6 +1116,8 @@ if __name__ == '__main__':
             missing_data_threshold = 20
             intepolation = False
             signal = 'BpmMean'
+
+            max_missing_seq = 5
         
 
         window_size_in_minutes = window_size * 60
@@ -1125,8 +1137,9 @@ if __name__ == '__main__':
     print(f'missing_data_threshold: {missing_data_threshold}')
     print(f'intepolation: {intepolation}')
     print(f'signal: {signal}')
+    print(f'max_missing_seq: {max_missing_seq}')
 
     logging.basicConfig(filename=f'logs/getRhythm_{now}.log', level=logging.INFO)
     logging.info('Starting getRhythm.py')
-    main(param, now, user_name, include_not_il, include_dst, window_size, increment_size, downsample, missing_data_threshold, intepolation, signal)
+    main(param, now, user_name, include_not_il, include_dst, window_size, increment_size, downsample, missing_data_threshold, intepolation, signal, max_missing_seq)
     time.sleep(15)
