@@ -197,7 +197,7 @@ try:
 
                 total_points = data_in_window.shape[0]
 
-                if total_points/1440 < window_size:
+                if total_points < window_size * 60 :
                     continue
                 missing_points = data_in_window.filter(pl.col(signal).is_null()).shape[0]
                 missing_percentage = (missing_points / total_points) * 100 if total_points > 0 else 100
@@ -255,6 +255,7 @@ try:
             period = window_size * 60 / downsample_rate
 
             result, data = cosinor_analysis(preprocessed_data, signal, period)
+            data['Id'] = [subject] * data.shape[0]
 
             final_sub_df, visu_sub_df, json_visu_sub, estimates_sub_df = generate_final_df(result, preprocessed_data, downsample_rate, period, window_size, subject, signal, experiment_start_date, incriment_size, end_datetime)
 
@@ -399,6 +400,7 @@ try:
             all_subjects_cosinor_preprocessed_data.write_parquet(all_subjects_preprocessed_data_path_hist)
         else:
             old_all_subjects_cosinor_preprocessed_data = pl.read_parquet(all_subjects_preprocessed_data_path)
+            
             old_all_subjects_cosinor_preprocessed_data = (
                 old_all_subjects_cosinor_preprocessed_data
                 .filter(
@@ -548,7 +550,8 @@ try:
             )
 
             all_subjects_cosinor_agg = pl.concat([old_all_subjects_cosinor_agg, all_subjects_cosinor_agg], how='vertical_relaxed')
-            all_subjects_cosinor_agg_path = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath('Aggregated Output').joinpath(f'all_subjects_cosinor_agg_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.csv')
+            all_subjects_cosinor_agg_path = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_cosinor_agg_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.csv')
+
             all_subjects_cosinor_agg.write_csv(all_subjects_cosinor_agg_path)
 
         ut.check_for_duplications(AGGREGATED_OUTPUT_PATH, AGGREGATED_OUTPUT_PATH_HISTORY)
@@ -905,6 +908,7 @@ try:
                 results[label] = cosinor.fit_me(data_for_label['x'], data_for_label['y'], n_components=1, period=period, plot=False, return_model=True, params_CI=True)
             except:
                 results[label] = None
+            
         return results, data
     
 
