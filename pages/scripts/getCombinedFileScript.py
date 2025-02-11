@@ -336,18 +336,43 @@ def main(project, now, username):
                 )
             )
         except:
-            subject_sleep_df = (
-                subject_sleep_df
-                .with_columns(
-                    pl.col('DateOfSleepEvening').str.to_datetime('%Y-%m-%d %H:%M:%S', strict=True)
+            try:
+                subject_sleep_df = (
+                    subject_sleep_df
+                    .with_columns(
+                        pl.col('DateOfSleepEvening').str.to_datetime('%Y-%m-%d %H:%M:%S', strict=True)
+                    )
+                    .filter(
+                        pl.col('DateOfSleepEvening').is_in(range_of_experiment_datetimes['FullDateTime'])
+                    )
+                    .with_columns(
+                        pl.col('DateOfSleepEvening').dt.date()
+                    )
                 )
-                .filter(
-                    pl.col('DateOfSleepEvening').is_in(range_of_experiment_datetimes['FullDateTime'])
-                )
-                .with_columns(
-                    pl.col('DateOfSleepEvening').dt.date()
-                )
-            )
+
+            except:
+                try:
+                    subject_sleep_df = (
+                        subject_sleep_df
+                        .with_columns(
+                            pl.col('DateOfSleepEvening').dt.strftime("%Y-%m-%d %H:%M:%S")
+                        ))
+                    subject_sleep_df = (
+                        subject_sleep_df
+                        .with_columns(
+                            pl.col('DateOfSleepEvening').str.to_datetime('%Y-%m-%d %H:%M:%S', strict=True)
+                        )
+                        .filter(
+                            pl.col('DateOfSleepEvening').is_in(range_of_experiment_datetimes['FullDateTime'])
+                        )
+                        .with_columns(
+                            pl.col('DateOfSleepEvening').dt.date()
+                        )
+                    )
+                except Exception as e:
+                    logging.error(f"Error processing subject_sleep_df: {e}")
+                    continue
+
         # for date in subject_sleep_df['DateOfSleepEvening']:
         #     if date not in range_of_experiment_dates:
         #         # drop the row if the date is not in the range of experiment dates
@@ -1483,7 +1508,7 @@ if __name__ == '__main__':
         user_name = sys.argv[3]
 
     except IndexError:
-        param = 'NOVA_HIPPA'
+        param = 'omri'
         now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         user_name = 'Unknown'
 

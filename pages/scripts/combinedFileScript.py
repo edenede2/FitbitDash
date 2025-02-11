@@ -515,7 +515,7 @@ if __name__ == '__main__':
         print(param)
         print(f'Starting initiate with system parameters')
     except IndexError:
-        param = 'Lab_Session'
+        param = 'omri'
         now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
         user_name = 'Unknown'
 
