@@ -70,4 +70,4 @@ If you use this tool in academic work, please cite:
 
 ### Acknowledgements
 
-Built with ❤️ by Eden Eldar and contributors from the Admon & Engelhard labs. Thanks to the open‑source communities behind **NeuroKit2**, **fMRIPrep**, **Polars**, and **Streamlit**.
+Built with ❤️ by Eden Eldar and contributors from the Admon & Engelhard labs. Thanks to the open‑source communities behind **Dash**, **CosinorPy**, **Polars**, and **Streamlit**.
