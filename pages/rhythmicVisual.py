@@ -202,7 +202,7 @@ def select_subjects(n_clicks, project, file):
 
     params = {}
 
-    interval_sizve = 24
+    interval_size = 24
     downsample_rate = 5
 
     file_partitioned = file.split('_')
@@ -215,7 +215,7 @@ def select_subjects(n_clicks, project, file):
         if i.startswith('ds'):
             params['downsample rate'] = i[2:]
             downsample_rate = i[2:]
-        if i.startswith('missingThr'):
+        if i.startswith('mThr'):
             params['missing threshold'] = i[10:]
         if i.startswith('True'):
             params['interpolate'] = True
@@ -730,9 +730,9 @@ def load_subjects(n_clicks, project, rows, file, params_to_store):
             x_est = visu_data['x_est']
             y_est = visu_data['y_est']
 
-            y_est_max_loc = visu_data['y_est_max_loc']
-            y_est_min_loc = visu_data['y_est_min_loc']
-            y_estimated_min = visu_data['y_estimated_min']
+            y_est_max_loc = x_est.to_numpy()[np.argmax(y_est.to_numpy())]
+            y_est_min_loc = x_est.to_numpy()[np.argmin(y_est.to_numpy())]
+            y_estimated_min = np.min(y_est.to_numpy())
 
 
 
@@ -872,7 +872,9 @@ def load_subjects(n_clicks, project, rows, file, params_to_store):
                                 dbc.Button('Previous Interval', id={'type': 'previous-polar-button-RV', 'index': i}, n_clicks=0)
                             ],
                             id={ 'type': 'card-body-RV2', 'index': i}
-                        )
+                        ),
+                        dcc.Store(id={'type': 'polar-fig-wind', 'index': i}, data={}),
+                        dcc.Store(id={'type': 'cartes-fig-wind', 'index': i}, data={})
                     ]
                 )
             )
@@ -885,374 +887,71 @@ def load_subjects(n_clicks, project, rows, file, params_to_store):
     print(f'returning cards and selected subjects {selected_subjects}')
     return cards , selected_subjects, polar_fig_wind, cartes_fig_wind
 
-# @callback(
-#     Output({'type': 'card-RV', 'index': MATCH}, 'children'),
-#     Output('polar-fig-wind', 'data', allow_duplicate=True),
-#     Output('cartes-fig-wind', 'data', allow_duplicate=True),
-#     Input({'type': 'next-cartes-button-RV', 'index': MATCH}, 'n_clicks'),
-#     Input({'type': 'next-polar-button-RV', 'index': MATCH}, 'n_clicks'),
-#     State('subjects-RV', 'data'),
-#     State({'type': 'cosinor-files-dropdown-RV', 'index': ALL}, 'value'),
-#     State('selected-cosinor-file-name', 'data'),
-#     State('project-selection-dropdown-FitBit-RV', 'value'),
-#     State('polar-fig-wind', 'data'),
-#     State('cartes-fig-wind', 'data'),
-#     prevent_initial_call=True
-# )
-# def next_interval(n_clicks_cartes, n_clicks_polar, subjects, file, params_to_store, project, polar_fig_wind, cartes_fig_wind):
-#     if n_clicks_cartes == 0 and n_clicks_polar == 0:
-#         raise PreventUpdate
+@callback(
+    Output({'type': 'card-RV', 'index': MATCH}, 'children'),
+    Output({'type': 'polar-fig-wind', 'index': MATCH}, 'data'),
+    Output({'type': 'cartes-fig-wind', 'index': MATCH}, 'data'),
+    Input({'type': 'next-cartes-button-RV', 'index': MATCH}, 'n_clicks'),
+    Input({'type': 'previous-cartes-button-RV', 'index': MATCH}, 'n_clicks'),
+    Input({'type': 'next-polar-button-RV', 'index': MATCH}, 'n_clicks'),
+    Input({'type': 'previous-polar-button-RV', 'index': MATCH}, 'n_clicks'),
+    State({'type': 'card-RV', 'index': MATCH}, 'children'),
+    State('subjects-RV', 'data'),
+    State({'type': 'polar-fig-wind', 'index': MATCH}, 'data'),
+    State({'type': 'cartes-fig-wind', 'index': MATCH}, 'data'),
+    State({'type': 'cosinor-files-dropdown-RV', 'index': ALL}, 'value'),
+    prevent_initial_call=True
+)
+def update_card_plots(nc_next, nc_prev, np_next, np_prev,
+                      current_card_body, subjects,
+                      polar_wind_store, cartes_wind_store, file):
+    # ...existing code...
+    ctx = dash.callback_context.triggered[0]['prop_id'].split('.')[0]
+    card_index = dash.callback_context.triggered_id['index']
+    subject = subjects[0]  # adjust as needed
+
+    if subject not in polar_wind_store:
+        polar_wind_store[subject] = 0
+    if subject not in cartes_wind_store:
+        cartes_wind_store[subject] = 0
     
-#     path = Pconfigs[project]
+    with open('cards_dict.pkl', 'rb') as f:
+        cards_dict = pickle.load(f)
 
-#     file = file[0]
+    if 'next-polar-button-RV' in ctx or 'previous-polar-button-RV' in ctx:
+        # For polar vs cartes
+        current_idx = polar_wind_store[subject]
+        if 'next-polar-button-RV' in ctx:
+            current_idx += 1
+        else:
+            current_idx -= 1
+        possible_keys = list(cards_dict[subject].keys())
+        current_idx %= len(possible_keys)
+        polar_wind_store[subject] = current_idx
+        date_key = possible_keys[current_idx]
+        visu_data = cards_dict[subject][date_key]
+        new_polar_fig = go.Figure()
+        # ...build new polar figure from visu_data...
+        new_card_body = current_card_body[:]
+        new_card_body[2]['props']['children'][0]['props']['figure'] = new_polar_fig
+        return new_card_body, polar_wind_store, cartes_wind_store
 
-#     with open('cards_dict.pkl', 'rb') as f:
-#         cards_dict = pickle.load(f)
-
-#     selected_subjects = subjects
-
-#     for sub in selected_subjects:
-#         polar_win_num = polar_fig_wind[sub] + 1 if polar_fig_wind[sub] + 1 < len(cards_dict[sub].keys()) else 0
-#         cartes_win_num = cartes_fig_wind[sub] + 1 if cartes_fig_wind[sub] + 1 < len(cards_dict[sub].keys()) else 0
-#         for i,date in enumerate(cards_dict[sub].keys()):
-#             if i == cartes_win_num:
-#                 visu_data = cards_dict[sub][date]
-#                 fig_cartes = go.Figure()
-#                 x_data = visu_data['x']
-#                 y_data = visu_data['y']
-#                 y_interpolated = visu_data['y_interpolated']
-
-#                 amplitude = visu_data['amplitude']
-#                 mesor = visu_data['mesor']
-#                 acrophase = visu_data['acrophase']
-#                 theta = visu_data['theta']
-
-#                 period_size = visu_data['period_size']
-#                 downsample_rate = visu_data['downsample_rate']
-
-#                 adj_r2 = visu_data['r_squared']
-#                 r_squared = visu_data['adj_r2']
-
-#                 x_est = visu_data['x_est']
-#                 y_est = visu_data['y_est']
-
-#                 y_est_max_loc = visu_data['y_est_max_loc']
-#                 y_est_min_loc = visu_data['y_est_min_loc']
-#                 y_estimated_min = visu_data['y_estimated_min']
-
-#                 if y_interpolated is not None:
-#                     fig_cartes.add_trace(go.Scatter(x=x_data, y=y_interpolated, mode='markers', name='Interpolated Data'))
-
-#                 fig_cartes.add_trace(go.Scatter(x=x_data, y=y_data, mode='markers', name='Original Data'))
-#                 fig_cartes.add_trace(go.Scatter(x=x_est, y=y_est, mode='lines', name='Estimated Curve'))
-#                 fig_cartes.add_trace(go.Scatter(x=x_est, y=[mesor]*len(x_est), mode='lines', name='MESOR'))
-#                 fig_cartes.add_shape(
-#                     type='line',
-#                     x0=y_est_max_loc,
-#                     y0=mesor,
-#                     x1=y_est_max_loc,
-#                     y1=amplitude,
-#                     line=dict(
-#                         color='red',
-#                         width=2,
-#                         dash='dashdot'
-#                     )
-#                 )
-
-#                 fig_cartes.add_shape(
-#                     type='line',
-#                     x0=y_est_min_loc,
-#                     y0=mesor,
-#                     x1=y_est_min_loc,
-#                     y1=y_estimated_min,
-#                     line=dict(
-#                         color='red',
-#                         width=2,
-#                         dash='dashdot'
-#                     )
-#                 )
-
-#                 fig_cartes.add_annotation(
-#                     x=y_est_max_loc,
-#                     y=amplitude,
-#                     text='Max',
-#                     showarrow=True,
-#                     arrowhead=1
-#                 )
-
-#                 fig_cartes.update_layout(
-#                 title=f'Subject: {sub} Interval: {date}',
-#                 xaxis_title='Time (absolute)',
-#                 yaxis_title='Signal',
-#                 showlegend=True
-#                 )
-
-#                 fig_cartes.update_layout(
-#                     annotations=[
-#                         dict(
-#                             x=0.5,
-#                             y=1.1,
-#                             xref='paper',
-#                             yref='paper',
-#                             text=f'R^2: {r_squared} Adj R^2: {adj_r2}',
-#                             showarrow=False
-#                         )
-#                     ]
-#                 )
-
-
-#             if i == polar_win_num:
-#                 visu_data = cards_dict[sub][date]
-#                 theta = visu_data['theta']
-#                 acrophase = quadrant_adjustment(theta, visu_data['acrophase'], radian=True)
-#                 period_size = visu_data['period_size']
-
-
-#                 amplitude = visu_data['amplitude']
-#                 mesor = visu_data['mesor']
-
-#                 center_r = [0, amplitude]
-#                 center_theta = [0, acrophase]
-
-#                 fig_polar = go.Figure()
-#                 fig_polar.add_trace(go.Scatterpolar(
-#                     r=[amplitude],
-#                     theta=[acrophase],
-#                     mode='markers',
-#                     name='Acrophase',
-#                     marker=dict(
-#                         size=10,
-#                         color='red'
-#                     )
-#                 ))
-
-#                 fig_polar.add_trace(go.Scatterpolar(
-#                     r=center_r,
-#                     theta=center_theta,
-#                     mode='lines',
-#                     line=dict(
-#                         color='green',
-#                         width=2
-#                     ),
-#                     name='Radius Line'
-#                 ))
-
-#                 hours, hours_deg = generate_polarticks(period_size, period_size)
-
-#                 fig_polar.update_layout(
-#                     title=f'Subject: {sub} Interval: {date}',
-#                     polar=dict(
-#                         angularaxis=dict(
-#                             tickmode='array',
-#                             tickvals=hours_deg,
-#                             ticktext=hours,
-#                             direction='clockwise',
-#                             rotation=0,
-#                             thetaunit='degrees'
-#                         ),
-#                     )
-#                 )
-
-#                 cartes_fig_wind[sub] = i + 1 if i + 1 < len(cards_dict[sub].keys()) else 0
-#                 polar_fig_wind[sub] = i + 1 if i + 1 < len(cards_dict[sub].keys()) else 0
-
-#     return [dbc.CardBody([dcc.Graph(figure=fig_cartes), dbc.Button('Next Interval', id={'type': 'next-cartes-button-RV', 'index': MATCH}, n_clicks=0), dbc.Button('Previous Interval', id={'type': 'previous-cartes-button-RV', 'index': MATCH}, n_clicks=0)]), dbc.CardBody([dcc.Graph(figure=fig_polar), dbc.Button('Next Interval', id={'type': 'next-polar-button-RV', 'index': MATCH}, n_clicks=0), dbc.Button('Previous Interval', id={'type': 'previous-polar-button-RV', 'index': MATCH}, n_clicks=0)])], polar_fig_wind, cartes_fig_wind
-
-
-# @callback(
-#     Output({'type': 'card-body-RV1', 'index': MATCH}, 'children', allow_duplicate=True),
-#     Output({'type': 'card-body-RV2', 'index': MATCH}, 'children', allow_duplicate=True),
-#     Output('polar-fig-wind', 'data', allow_duplicate=True),
-#     Output('cartes-fig-wind', 'data', allow_duplicate=True),
-#     Input({'type': 'previous-cartes-button-RV', 'index': MATCH}, 'n_clicks'),
-#     Input({'type': 'previous-polar-button-RV', 'index': MATCH}, 'n_clicks'),
-#     State('subjects-RV', 'data'),
-#     State({'type': 'cosinor-files-dropdown-RV', 'index': ALL}, 'value'),
-#     State('selected-cosinor-file-name', 'data'),
-#     State('project-selection-dropdown-FitBit-RV', 'value'),
-#     State('polar-fig-wind', 'data'),
-#     State('cartes-fig-wind', 'data'),
-#     prevent_initial_call=True
-# )
-# def previous_interval(n_clicks_cartes, n_clicks_polar, subjects, file, params_to_store, project, polar_fig_wind, cartes_fig_wind):
-#     if n_clicks_cartes == 0 and n_clicks_polar == 0:
-#         raise PreventUpdate
-    
-#     path = Pconfigs[project]
-
-#     file = file[0]
-
-#     with open('cards_dict.pkl', 'rb') as f:
-#         cards_dict = pickle.load(f)
-
-#     selected_subjects = subjects
-
-#     for sub in selected_subjects:
-#         polar_win_num = polar_fig_wind[sub] - 1 if polar_fig_wind[sub] > 0 else 0
-#         cartes_win_num = cartes_fig_wind[sub] - 1 if cartes_fig_wind[sub] > 0 else 0
-#         for i,date in enumerate(cards_dict[sub].keys()):
-
-#             if i == cartes_win_num:
-#                 visu_data = cards_dict[sub][date]
-#                 fig_cartes = go.Figure()
-#                 x_data = visu_data['x']
-#                 y_data = visu_data['y']
-#                 y_interpolated = visu_data['y_interpolated']
-
-#                 amplitude = visu_data['amplitude']
-#                 mesor = visu_data['mesor']
-#                 acrophase = visu_data['acrophase']
-#                 theta = visu_data['theta']
-
-#                 period_size = visu_data['period_size']
-#                 downsample_rate = visu_data['downsample_rate']
-
-#                 adj_r2 = visu_data['r_squared']
-#                 r_squared = visu_data['adj_r2']
-
-#                 x_est = visu_data['x_est']
-#                 y_est = visu_data['y_est']
-
-#                 y_est_max_loc = visu_data['y_est_max_loc']
-#                 y_est_min_loc = visu_data['y_est_min_loc']
-#                 y_estimated_min = visu_data['y_estimated_min']
-
-#                 if y_interpolated is not None:
-#                     fig_cartes.add_trace(go.Scatter(x=x_data, y=y_interpolated, mode='markers', name='Interpolated Data'))
-
-#                 fig_cartes.add_trace(go.Scatter(x=x_data, y=y_data, mode='markers', name='Original Data'))
-#                 fig_cartes.add_trace(go.Scatter(x=x_est, y=y_est, mode='lines', name='Estimated Curve'))
-#                 fig_cartes.add_trace(go.Scatter(x=x_est, y=[mesor]*len(x_est), mode='lines', name='MESOR'))
-#                 fig_cartes.add_shape(
-#                     type='line',
-#                     x0=y_est_max_loc,
-#                     y0=mesor,
-#                     x1=y_est_max_loc,
-#                     y1=amplitude,
-#                     line=dict(
-#                         color='red',
-#                         width=2,
-#                         dash='dashdot'
-#                     )
-#                 )
-
-#                 fig_cartes.add_shape(
-#                     type='line',
-#                     x0=y_est_min_loc,
-#                     y0=mesor,
-#                     x1=y_est_min_loc,
-#                     y1=y_estimated_min,
-#                     line=dict(
-#                         color='red',
-#                         width=2,
-#                         dash='dashdot'
-#                     )
-#                 )
-
-#                 fig_cartes.add_annotation(
-#                     x=y_est_max_loc,
-#                     y=amplitude,
-#                     text='Max',
-#                     showarrow=True,
-#                     arrowhead=1
-#                 )
-
-#                 fig_cartes.update_layout(
-#                 title=f'Subject: {sub} Interval: {date}',
-#                 xaxis_title='Time (absolute)',
-#                 yaxis_title='Signal',
-#                 showlegend=True
-#                 )
-
-#                 fig_cartes.update_layout(
-#                     annotations=[
-#                         dict(
-#                             x=0.5,
-#                             y=1.1,
-#                             xref='paper',
-#                             yref='paper',
-#                             text=f'R^2: {r_squared} Adj R^2: {adj_r2}',
-#                             showarrow=False
-#                         )
-#                     ]
-#                 )
-
-#             if i == n_clicks_polar + 1:
-#                 visu_data = cards_dict[sub][date]
-#                 theta = visu_data['theta']
-#                 acrophase = quadrant_adjustment(theta, visu_data['acrophase'], radian=True)
-
-#                 amplitude = visu_data['amplitude']
-#                 mesor = visu_data['mesor']
-
-#                 center_r = [0, amplitude]
-#                 center_theta = [0, acrophase]
-
-#                 fig_polar = go.Figure()
-#                 fig_polar.add_trace(go.Scatterpolar(
-#                     r=[amplitude],
-#                     theta=[acrophase],
-#                     mode='markers',
-#                     name='Acrophase',
-#                     marker=dict(
-#                         size=10,
-#                         color='red'
-#                     )
-#                 ))
-
-#                 fig_polar.add_trace(go.Scatterpolar(
-#                     r=center_r,
-#                     theta=center_theta,
-#                     mode='lines',
-#                     line=dict(
-#                         color='green',
-#                         width=2
-#                     ),
-#                     name='Radius Line'
-#                 ))
-
-#                 hours, hours_deg = generate_polarticks(period_size, period_size)
-
-#                 fig_polar.update_layout(
-#                     title=f'Subject: {sub} Interval: {date}',
-#                     polar=dict(
-#                         angularaxis=dict(
-#                             tickmode='array',
-#                             tickvals=hours_deg,
-#                             ticktext=hours,
-#                             direction='clockwise',
-#                             rotation=0,
-#                             thetaunit='degrees'
-#                         ),
-#                     )
-#                 )
-
-#                 cartes_fig_wind[sub] = i - 1 if i > 0 else 0
-#                 polar_fig_wind[sub] = i - 1 if i > 0 else 0
-
-#     return dbc.CardBody([dcc.Graph(figure=fig_cartes), dbc.Button('Next Interval', id={'type': 'next-cartes-button-RV', 'index': MATCH}, n_clicks=0), dbc.Button('Previous Interval', id={'type': 'previous-cartes-button-RV', 'index': MATCH}, n_clicks=0)]), dbc.CardBody([dcc.Graph(figure=fig_polar), dbc.Button('Next Interval', id={'type': 'next-polar-button-RV', 'index': MATCH}, n_clicks=0), dbc.Button('Previous Interval', id={'type': 'previous-polar-button-RV', 'index': MATCH}, n_clicks=0)]), polar_fig_wind, cartes_fig_wind
-
-
-
-
-
-# @callback(
-#     Output('raw-data-subjects-container-RV', 'children', allow_duplicate=True),
-#     Input('subjects-RV', 'data'),
-#     State('project-selection-dropdown-FitBit-RV', 'value'),
-#     prevent_initial_call=True
-# )
-# def show_card_plots(subjects, project):
-#     if subjects == []:
-#         raise PreventUpdate
-    
-#     path = Pconfigs[project]
-
-#     with open('cards_dict.pkl', 'rb') as f:
-#         cards_dict = pickle.load(f)
-
-#     cards = []
+    # Otherwise, cartes
+    current_idx = cartes_wind_store[subject]
+    if 'next-cartes-button-RV' in ctx:
+        current_idx += 1
+    elif 'previous-cartes-button-RV' in ctx:
+        current_idx -= 1
+    possible_keys = list(cards_dict[subject].keys())
+    current_idx %= len(possible_keys)
+    cartes_wind_store[subject] = current_idx
+    date_key = possible_keys[current_idx]
+    visu_data = cards_dict[subject][date_key]
+    new_cartes_fig = go.Figure()
+    # ...build new cartesian figure from visu_data...
+    new_card_body = current_card_body[:]
+    new_card_body[1]['props']['children'][0]['props']['figure'] = new_cartes_fig
+    return new_card_body, polar_wind_store, cartes_wind_store
 
 @callback(
     Output('raw-data-subjects-container-RV', 'children', allow_duplicate=True),
@@ -1320,8 +1019,8 @@ def show_all(n_clicks, project, subjects, file, params_to_store):
 
     cards = make_cards(estimated_df, visu_df, subs_desc_dict, subjects, params_to_store)
 
-
     return cards, subjects
+# ...existing code...
 
 
 

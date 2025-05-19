@@ -320,17 +320,17 @@ try:
             all_subjects_json[subject] = json_visu_sub
 
 
-        all_subjects_cosinor_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_cosinor_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.csv')
-        all_subjects_cosinor_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_cosinor_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.csv')
+        all_subjects_cosinor_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_cosinor_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{data_interpolation}.csv')
+        all_subjects_cosinor_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_cosinor_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{data_interpolation}.csv')
         
-        all_subjects_visu_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_visu_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.parquet')
-        all_subjects_visu_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_visu_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.parquet')
+        all_subjects_visu_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_visu_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{data_interpolation}.parquet')
+        all_subjects_visu_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_visu_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{data_interpolation}.parquet')
         
-        all_subjects_json_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_json_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.json')
-        all_subjects_json_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_json_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.json')
+        all_subjects_json_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_json_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{data_interpolation}.json')
+        all_subjects_json_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_json_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{data_interpolation}.json')
 
-        all_subjects_estimates_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_estimates_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.parquet')
-        all_subjects_estimates_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_estimates_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{intepolation}.parquet')
+        all_subjects_estimates_path_hist = AGGREGATED_OUTPUT_PATH_HISTORY.joinpath(f'all_subjects_estimates_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{data_interpolation}.parquet')
+        all_subjects_estimates_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath(f'all_subjects_estimates_w{window_size}_incr{incriment_size}_ds{downsample_rate}_mThr{missing_data_thr}_inp_{data_interpolation}.parquet')
 
         if not all_subjects_cosinor_path.exists():
             all_subjects_cosinor.sort(['Id', 'ExperimentDay'])

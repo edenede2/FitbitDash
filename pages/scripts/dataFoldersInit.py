@@ -290,7 +290,7 @@ def main(project, now, username):
 
                 for day in subject_dates_range:
                     file_name = f'heart_rate-{day.strftime("%Y-%m-%d")}.json'
-                    file_name_api = f'api_heart_rate-{day.strftime("%Y-%m-%d")}.json'
+                    file_name_api = f'api-heart_rate-{day.strftime("%Y-%m-%d")}.json'
                     if file_name in heart_rate_json_files:
                         heart_rate_files_to_copy.append(file_name)
                     elif file_name_api in heart_rate_json_files:

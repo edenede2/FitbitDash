@@ -324,22 +324,12 @@ def main(project, now, username):
             )
         )
 
-        
         try:
+            # Try parsing as string first
             subject_sleep_df = (
                 subject_sleep_df
                 .with_columns(
-                    pl.col('DateOfSleepEvening').str.to_date('%Y-%m-%d', strict=True)
-                )
-                .filter(
-                    pl.col('DateOfSleepEvening').is_in(experiment_date_range['FullDate'])
-                )
-            )
-        except:
-            subject_sleep_df = (
-                subject_sleep_df
-                .with_columns(
-                    pl.col('DateOfSleepEvening').str.to_datetime('%Y-%m-%d %H:%M:%S', strict=True)
+                    pl.col('DateOfSleepEvening').str.to_datetime('%Y-%m-%d %H:%M:%S', strict=False)
                 )
                 .filter(
                     pl.col('DateOfSleepEvening').is_in(range_of_experiment_datetimes['FullDateTime'])
@@ -348,6 +338,39 @@ def main(project, now, username):
                     pl.col('DateOfSleepEvening').dt.date()
                 )
             )
+        except Exception as e:
+            experiment_dates = range_of_experiment_datetimes.select(
+                pl.col('FullDateTime').dt.date().alias('FullDate')
+            )
+            subject_sleep_df = (
+                subject_sleep_df
+                .filter(
+                    pl.col('DateOfSleepEvening').is_in(experiment_dates['FullDate'])
+                )
+            )
+        # try:
+        #     subject_sleep_df = (
+        #         subject_sleep_df
+        #         .with_columns(
+        #             pl.col('DateOfSleepEvening').str.to_date('%Y-%m-%d', strict=True)
+        #         )
+        #         .filter(
+        #             pl.col('DateOfSleepEvening').is_in(experiment_date_range['FullDate'])
+        #         )
+        #     )
+        # except:
+        #     subject_sleep_df = (
+        #         subject_sleep_df
+        #         .with_columns(
+        #             pl.col('DateOfSleepEvening').str.to_datetime('%Y-%m-%d %H:%M:%S', strict=True)
+        #         )
+        #         .filter(
+        #             pl.col('DateOfSleepEvening').is_in(range_of_experiment_datetimes['FullDateTime'])
+        #         )
+        #         .with_columns(
+        #             pl.col('DateOfSleepEvening').dt.date()
+        #         )
+        #     )
         # for date in subject_sleep_df['DateOfSleepEvening']:
         #     if date not in range_of_experiment_dates:
         #         # drop the row if the date is not in the range of experiment dates
@@ -854,24 +877,24 @@ def main(project, now, username):
 
         ut.check_for_duplications(subject_output_path, subject_output_path_history)
 
-    # all_subjects_1_min_resolution_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath('All_Subjects_1_Minute_Resolution.parquet')
+    all_subjects_1_min_resolution_path = OUTPUT_PATH.joinpath('Aggregated Output').joinpath('All_Subjects_1_Minute_Resolution.parquet')
 
-    # if not all_subjects_1_min_resolution_path.exists():
-    #     all_subjects_1_min_resolution.select(['Id'] + columns_ordered).write_parquet(all_subjects_1_min_resolution_path)
-    # else:
-    #     old_all_subjects_1_min_resolution = pl.read_parquet(all_subjects_1_min_resolution_path)
-    #     old_all_subjects_1_min_resolution = (
-    #         old_all_subjects_1_min_resolution
-    #         .filter(
-    #             ~pl.col('Id').is_in(all_subjects_1_min_resolution['Id'])
-    #         )
-    #     )
+    if not all_subjects_1_min_resolution_path.exists():
+        all_subjects_1_min_resolution.select(['Id'] + columns_ordered).write_parquet(all_subjects_1_min_resolution_path)
+    else:
+        old_all_subjects_1_min_resolution = pl.read_parquet(all_subjects_1_min_resolution_path)
+        old_all_subjects_1_min_resolution = (
+            old_all_subjects_1_min_resolution
+            .filter(
+                ~pl.col('Id').is_in(all_subjects_1_min_resolution['Id'])
+            )
+        )
 
-    #     all_subjects_1_min_resolution = all_subjects_1_min_resolution.select(['Id'] + columns_ordered)
+        all_subjects_1_min_resolution = all_subjects_1_min_resolution.select(['Id'] + columns_ordered)
 
-    #     all_subjects_1_min_resolution = pl.concat([old_all_subjects_1_min_resolution, all_subjects_1_min_resolution])
+        all_subjects_1_min_resolution = pl.concat([old_all_subjects_1_min_resolution, all_subjects_1_min_resolution])
 
-    #     all_subjects_1_min_resolution.write_parquet(all_subjects_1_min_resolution_path)
+        all_subjects_1_min_resolution.write_parquet(all_subjects_1_min_resolution_path)
 
 
 
